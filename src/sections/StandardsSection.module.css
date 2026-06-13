@@ -1,0 +1,165 @@
+.section {
+  position: relative;
+  padding: var(--section-padding) 0;
+  background: var(--black-pure);
+  overflow: hidden;
+}
+
+.bgLayers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.glow1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 169, 110, 0.05) 0%, transparent 60%);
+  top: -100px;
+  left: 20%;
+  animation: floatGlow 20s ease-in-out infinite;
+}
+
+.glow2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 124, 134, 0.04) 0%, transparent 60%);
+  bottom: -100px;
+  right: 10%;
+  animation: floatGlow 18s ease-in-out infinite reverse;
+}
+
+.glow3 {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 106, 79, 0.04) 0%, transparent 60%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: floatGlow 22s ease-in-out infinite 5s;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.label {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.metricCard {
+  height: 100%;
+}
+
+.metric {
+  position: relative;
+  padding: 36px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.metricGlow {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 120px;
+  opacity: 0.06;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.metricCard:hover .metricGlow {
+  opacity: 0.12;
+}
+
+.metricValue {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.metricLabel {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.metricDesc {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+@keyframes floatGlow {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-15px, 15px) scale(1.05);
+  }
+}
+
+@media (max-width: 968px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metric {
+    padding: 24px 16px;
+  }
+}

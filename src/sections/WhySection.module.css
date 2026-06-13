@@ -1,0 +1,104 @@
+.section {
+  position: relative;
+  padding: var(--section-padding) 0;
+  background: var(--black-pure);
+  overflow: hidden;
+}
+
+.bgLayers { position: absolute; inset: 0; pointer-events: none; }
+
+.glow1 {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 106, 79, 0.05) 0%, transparent 60%);
+  top: 20%; left: -100px;
+  animation: floatGlow 20s ease-in-out infinite;
+}
+
+.glow2 {
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
+  bottom: 10%; right: -100px;
+  animation: floatGlow 18s ease-in-out infinite reverse;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.label {
+  display: inline-block;
+  font-family: var(--font-sans); font-weight: 500;
+  font-size: 0.65rem; letter-spacing: 0.3em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 24px;
+}
+
+.heading {
+  font-family: var(--font-serif); font-weight: 400;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1; letter-spacing: -0.02em;
+  margin-bottom: 28px;
+}
+
+.desc {
+  font-family: var(--font-sans); font-weight: 300;
+  font-size: 1rem; color: var(--text-secondary);
+  line-height: 1.8; max-width: 440px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reasonCard {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 24px 28px; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.5s var(--ease-luxury);
+}
+
+.reasonCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(8px);
+}
+
+.reasonNumber {
+  font-family: var(--font-serif); font-weight: 300;
+  font-size: 2rem; color: var(--gold-dark);
+  line-height: 1; flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.reasonTitle {
+  font-family: var(--font-sans); font-weight: 600;
+  font-size: 0.95rem; color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.reasonDesc {
+  font-family: var(--font-sans); font-weight: 300;
+  font-size: 0.85rem; color: var(--text-tertiary);
+  line-height: 1.6;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-15px, 15px) scale(1.05); }
+}
+
+@media (max-width: 968px) {
+  .layout { grid-template-columns: 1fr; gap: 48px; }
+}
