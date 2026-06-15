@@ -22,10 +22,24 @@ const CartWishlistContext = createContext({
 const getPriceMultiplier = (weight) => {
   if (!weight) return 1;
   if (weight.includes('kg')) {
-    return parseFloat(weight);
+    const val = parseFloat(weight);
+    return val * 2; // base price is for 500g
   }
   if (weight.includes('g') && !weight.includes('pieces')) {
-    return parseFloat(weight) / 1000;
+    const val = parseFloat(weight);
+    return val / 500; // base price is for 500g
+  }
+  if (weight.includes('pieces')) {
+    const val = parseInt(weight);
+    return val / 6; // base price is for 6 pieces
+  }
+  if (weight.includes('ml')) {
+    const val = parseFloat(weight);
+    return val / 200; // base price is for 200ml
+  }
+  if (weight.includes('L')) {
+    const val = parseFloat(weight);
+    return val * 5; // base price is for 200ml
   }
   return 1;
 };
