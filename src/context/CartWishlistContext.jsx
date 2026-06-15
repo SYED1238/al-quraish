@@ -55,147 +55,131 @@ export function CartWishlistProvider({ children }) {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      if (user) {
-        // Logged-in: fetch from Supabase
+
+      // 1. Local-first immediate load from localStorage
+      const localCart = localStorage.getItem('al_quraish_cart');
+      const localWish = localStorage.getItem('al_quraish_wishlist');
+
+      let initialCart = [];
+      if (localCart) {
         try {
-          // 1. Fetch Cart Items from DB
+          initialCart = JSON.parse(localCart);
+          setCart(initialCart);
+        } catch (e) {
+          console.error('Failed to parse local cart:', e);
+        }
+      }
+
+      let initialWish = [];
+      if (localWish) {
+        try {
+          const parsedIds = JSON.parse(localWish);
+          initialWish = parsedIds.map(id => typeof id === 'object' ? id : { id });
+          setWishlist(initialWish);
+        } catch (e) {
+          console.error('Failed to parse local wishlist:', e);
+        }
+      }
+
+      if (user) {
+        // Logged-in: sync and merge with Supabase in the background
+        try {
+          // A. Fetch Cart Items from DB
           const { data: dbCart, error: cartErr } = await supabase
             .from('cart_items')
             .select('*, products(*)')
             .eq('user_id', user.id);
 
-          // 2. Fetch Wishlist Items from DB
+          // B. Fetch Wishlist Items from DB
           const { data: dbWishlist, error: wishErr } = await supabase
             .from('wishlist_items')
             .select('*, products(*)')
             .eq('user_id', user.id);
 
+          let mergedCart = [...initialCart];
           if (!cartErr && dbCart) {
-            const formattedCart = dbCart.map(item => ({
-              id: item.product_id,
-              name: item.products.name,
-              image: item.products.image,
-              weight: item.weight,
-              basePrice: Number(item.products.price),
-              priceMultiplier: getPriceMultiplier(item.weight),
-              quantity: item.quantity
-            }));
-            setCart(formattedCart);
-          }
+            // Filter out any items where joined product is null due to id mismatches or seeding lags
+            const formattedCart = dbCart
+              .filter(item => item.products !== null)
+              .map(item => ({
+                id: item.product_id,
+                name: item.products.name,
+                image: item.products.image,
+                weight: item.weight,
+                basePrice: Number(item.products.price),
+                priceMultiplier: getPriceMultiplier(item.weight),
+                quantity: item.quantity
+              }));
 
-          if (!wishErr && dbWishlist) {
-            const formattedWishlist = dbWishlist.map(item => ({
-              id: item.product_id,
-              name: item.products.name,
-              image: item.products.image,
-              price: Number(item.products.price),
-              category: item.products.category
-            }));
-            setWishlist(formattedWishlist);
-          }
-
-          // 3. Check for any leftover local guest cart to merge
-          const localCart = localStorage.getItem('al_quraish_cart');
-          if (localCart) {
-            try {
-              const parsedLocal = JSON.parse(localCart);
-              if (parsedLocal && parsedLocal.length > 0) {
-                // Merge guest items into DB
-                for (const item of parsedLocal) {
-                  await supabase.from('cart_items').upsert({
-                    user_id: user.id,
-                    product_id: item.id,
-                    quantity: item.quantity,
-                    weight: item.weight
-                  }, { onConflict: 'user_id,product_id,weight' });
-                }
-                localStorage.removeItem('al_quraish_cart');
-                // Reload db cart
-                const { data: reloadedCart } = await supabase
-                  .from('cart_items')
-                  .select('*, products(*)')
-                  .eq('user_id', user.id);
-                if (reloadedCart) {
-                  setCart(reloadedCart.map(item => ({
-                    id: item.product_id,
-                    name: item.products.name,
-                    image: item.products.image,
-                    weight: item.weight,
-                    basePrice: Number(item.products.price),
-                    priceMultiplier: getPriceMultiplier(item.weight),
-                    quantity: item.quantity
-                  })));
-                }
+            // Merge DB items into the local cart
+            formattedCart.forEach(dbItem => {
+              const idx = mergedCart.findIndex(
+                localItem => localItem.id === dbItem.id && localItem.weight === dbItem.weight
+              );
+              if (idx > -1) {
+                mergedCart[idx].quantity = Math.max(mergedCart[idx].quantity, dbItem.quantity);
+              } else {
+                mergedCart.push(dbItem);
               }
-            } catch (e) {
-              console.error('Failed to merge local cart:', e);
+            });
+            setCart(mergedCart);
+            localStorage.setItem('al_quraish_cart', JSON.stringify(mergedCart));
+          }
+
+          let mergedWish = [...initialWish];
+          if (!wishErr && dbWishlist) {
+            const formattedWishlist = dbWishlist
+              .filter(item => item.products !== null)
+              .map(item => ({
+                id: item.product_id,
+                name: item.products.name,
+                image: item.products.image,
+                price: Number(item.products.price),
+                category: item.products.category
+              }));
+
+            // Merge DB items into the local wishlist
+            formattedWishlist.forEach(dbItem => {
+              if (!mergedWish.some(localItem => localItem.id === dbItem.id)) {
+                mergedWish.push(dbItem);
+              }
+            });
+            setWishlist(mergedWish);
+            localStorage.setItem('al_quraish_wishlist', JSON.stringify(mergedWish.map(i => i.id)));
+          }
+
+          // C. Push local items not in Supabase back to the database in background
+          if (mergedCart.length > 0) {
+            for (const item of mergedCart) {
+              try {
+                await supabase.from('cart_items').upsert({
+                  user_id: user.id,
+                  product_id: item.id,
+                  quantity: item.quantity,
+                  weight: item.weight
+                }, { onConflict: 'user_id,product_id,weight' });
+              } catch (err) {
+                // If it fails (e.g. foreign key constraint for unseeded products), catch silently so local cart is unaffected
+                console.warn(`Supabase background cart sync failed for product '${item.id}':`, err);
+              }
             }
           }
 
-          // 4. Merge guest wishlist
-          const localWish = localStorage.getItem('al_quraish_wishlist');
-          if (localWish) {
-            try {
-              const parsedWish = JSON.parse(localWish);
-              if (parsedWish && parsedWish.length > 0) {
-                for (const prodId of parsedWish) {
-                  await supabase.from('wishlist_items').upsert({
-                    user_id: user.id,
-                    product_id: prodId
-                  }, { onConflict: 'user_id,product_id' });
-                }
-                localStorage.removeItem('al_quraish_wishlist');
-                // Reload DB wishlist
-                const { data: reloadedWish } = await supabase
-                  .from('wishlist_items')
-                  .select('*, products(*)')
-                  .eq('user_id', user.id);
-                if (reloadedWish) {
-                  setWishlist(reloadedWish.map(item => ({
-                    id: item.product_id,
-                    name: item.products.name,
-                    image: item.products.image,
-                    price: Number(item.products.price),
-                    category: item.products.category
-                  })));
-                }
+          if (mergedWish.length > 0) {
+            for (const item of mergedWish) {
+              try {
+                await supabase.from('wishlist_items').upsert({
+                  user_id: user.id,
+                  product_id: item.id
+                }, { onConflict: 'user_id,product_id' });
+              } catch (err) {
+                console.warn(`Supabase background wishlist sync failed for product '${item.id}':`, err);
               }
-            } catch (e) {
-              console.error('Failed to merge wishlist:', e);
             }
           }
 
         } catch (e) {
-          console.error('Error loading Supabase user cart:', e);
-        }
-      } else {
-        // Logged-out: fetch from localStorage
-        const localCart = localStorage.getItem('al_quraish_cart');
-        const localWish = localStorage.getItem('al_quraish_wishlist');
-        
-        if (localCart) {
-          try {
-            setCart(JSON.parse(localCart));
-          } catch {
-            setCart([]);
-          }
-        } else {
-          setCart([]);
-        }
-
-        if (localWish) {
-          try {
-            const parsedIds = JSON.parse(localWish);
-            // Fetch standard product static cards mapping since user is offline
-            // We can resolve objects later or store simple IDs. To be consistent,
-            // we will fetch actual data objects if we seed it, or fallback.
-            // Let's store direct ID strings in the local wishlist.
-            setWishlist(parsedIds.map(id => ({ id })));
-          } catch {
-            setWishlist([]);
-          }
-        } else {
-          setWishlist([]);
+          console.error('Error syncing Supabase user cart:', e);
         }
       }
       setLoading(false);
@@ -207,16 +191,12 @@ export function CartWishlistProvider({ children }) {
   // Sync state modifications helper
   const saveCartToStorage = (updatedCart) => {
     setCart(updatedCart);
-    if (!user) {
-      localStorage.setItem('al_quraish_cart', JSON.stringify(updatedCart));
-    }
+    localStorage.setItem('al_quraish_cart', JSON.stringify(updatedCart));
   };
 
   const saveWishlistToStorage = (updatedWish) => {
     setWishlist(updatedWish);
-    if (!user) {
-      localStorage.setItem('al_quraish_wishlist', JSON.stringify(updatedWish.map(i => i.id)));
-    }
+    localStorage.setItem('al_quraish_wishlist', JSON.stringify(updatedWish.map(i => i.id)));
   };
 
   const addToCart = async (product, weight, qty = 1) => {
@@ -230,12 +210,16 @@ export function CartWishlistProvider({ children }) {
       saveCartToStorage(updatedCart);
       
       if (user) {
-        await supabase
-          .from('cart_items')
-          .update({ quantity: updatedCart[existingIndex].quantity })
-          .eq('user_id', user.id)
-          .eq('product_id', product.id)
-          .eq('weight', weight);
+        try {
+          await supabase
+            .from('cart_items')
+            .update({ quantity: updatedCart[existingIndex].quantity })
+            .eq('user_id', user.id)
+            .eq('product_id', product.id)
+            .eq('weight', weight);
+        } catch (e) {
+          console.error('Failed to sync cart item update to Supabase:', e);
+        }
       }
     } else {
       const newItem = {
@@ -251,12 +235,16 @@ export function CartWishlistProvider({ children }) {
       saveCartToStorage(updatedCart);
 
       if (user) {
-        await supabase.from('cart_items').upsert({
-          user_id: user.id,
-          product_id: product.id,
-          quantity: qty,
-          weight: weight
-        });
+        try {
+          await supabase.from('cart_items').upsert({
+            user_id: user.id,
+            product_id: product.id,
+            quantity: qty,
+            weight: weight
+          });
+        } catch (e) {
+          console.error('Failed to sync new cart item to Supabase:', e);
+        }
       }
     }
   };
@@ -273,23 +261,31 @@ export function CartWishlistProvider({ children }) {
       saveCartToStorage(updatedCart);
       
       if (user) {
-        await supabase
-          .from('cart_items')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('product_id', productId)
-          .eq('weight', weight);
+        try {
+          await supabase
+            .from('cart_items')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('product_id', productId)
+            .eq('weight', weight);
+        } catch (e) {
+          console.error('Failed to delete cart item from Supabase:', e);
+        }
       }
     } else {
       saveCartToStorage(updatedCart);
       
       if (user) {
-        await supabase
-          .from('cart_items')
-          .update({ quantity: updatedCart[idx].quantity })
-          .eq('user_id', user.id)
-          .eq('product_id', productId)
-          .eq('weight', weight);
+        try {
+          await supabase
+            .from('cart_items')
+            .update({ quantity: updatedCart[idx].quantity })
+            .eq('user_id', user.id)
+            .eq('product_id', productId)
+            .eq('weight', weight);
+        } catch (e) {
+          console.error('Failed to update cart item quantity in Supabase:', e);
+        }
       }
     }
   };
@@ -299,17 +295,20 @@ export function CartWishlistProvider({ children }) {
     saveCartToStorage(updatedCart);
 
     if (user) {
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('product_id', productId)
-        .eq('weight', weight);
+      try {
+        await supabase
+          .from('cart_items')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('product_id', productId)
+          .eq('weight', weight);
+      } catch (e) {
+        console.error('Failed to delete cart item from Supabase:', e);
+      }
     }
   };
 
   const addToWishlist = async (product) => {
-    // Check if already in wishlist
     if (wishlist.some(item => item.id === product.id)) return;
 
     const updatedWish = [...wishlist, {
@@ -322,10 +321,14 @@ export function CartWishlistProvider({ children }) {
     saveWishlistToStorage(updatedWish);
 
     if (user) {
-      await supabase.from('wishlist_items').upsert({
-        user_id: user.id,
-        product_id: product.id
-      });
+      try {
+        await supabase.from('wishlist_items').upsert({
+          user_id: user.id,
+          product_id: product.id
+        });
+      } catch (e) {
+        console.error('Failed to add wishlist item to Supabase:', e);
+      }
     }
   };
 
@@ -334,11 +337,15 @@ export function CartWishlistProvider({ children }) {
     saveWishlistToStorage(updatedWish);
 
     if (user) {
-      await supabase
-        .from('wishlist_items')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('product_id', productId);
+      try {
+        await supabase
+          .from('wishlist_items')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('product_id', productId);
+      } catch (e) {
+        console.error('Failed to delete wishlist item from Supabase:', e);
+      }
     }
   };
 
@@ -349,7 +356,11 @@ export function CartWishlistProvider({ children }) {
   const clearCart = async () => {
     saveCartToStorage([]);
     if (user) {
-      await supabase.from('cart_items').delete().eq('user_id', user.id);
+      try {
+        await supabase.from('cart_items').delete().eq('user_id', user.id);
+      } catch (e) {
+        console.error('Failed to clear cart in Supabase:', e);
+      }
     }
   };
 
