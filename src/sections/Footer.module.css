@@ -1,12 +1,17 @@
 .footer {
   position: relative;
   padding: 80px 0 40px;
-  background: var(--black-deep);
+  background: #062a1c;
+  color: #ffffff;
 }
 
 .topLine {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 200px; height: 1px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 1px;
   background: var(--gradient-gold);
   opacity: 0.3;
 }
@@ -19,139 +24,174 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
   gap: 60px;
   padding-bottom: 60px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.brand { display: flex; flex-direction: column; gap: 16px; }
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .logo {
-  font-family: var(--font-sans);
-  font-weight: 600; font-size: 1.3rem;
-  letter-spacing: 0.35em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.logoIcon {
+  width: 38px;
+  height: 38px;
+  background-color: #d4af37;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #062a1c;
+}
+
+.logoIcon span {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.logoTextContainer {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logoTextMain {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.logoTextSub {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #d4af37;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--text-primary);
 }
 
 .tagline {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.85rem; color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: #a2bba9;
   line-height: 1.6;
 }
 
-.socials { display: flex; gap: 12px; margin-top: 8px; }
-
-.socialLink {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-tertiary);
-  transition: all 0.3s var(--ease-luxury);
-  text-decoration: none;
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-
-.socialLink:hover {
-  background: rgba(201, 169, 110, 0.1);
-  border-color: rgba(201, 169, 110, 0.2);
-  color: var(--gold);
-}
-
-.linkGroup { display: flex; flex-direction: column; gap: 12px; }
 
 .linkTitle {
-  font-family: var(--font-sans); font-weight: 600;
-  font-size: 0.7rem; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--text-primary);
-  margin-bottom: 4px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4af37;
+  margin-bottom: 8px;
 }
 
 .link {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.85rem; color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.link:hover { color: var(--gold); }
-
-.newsletter { display: flex; flex-direction: column; gap: 12px; }
-
-.newsletterDesc {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.82rem; color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.form {
-  display: flex; gap: 0;
-  margin-top: 4px;
-}
-
-.input {
-  flex: 1; padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-  color: var(--text-primary);
-  font-family: var(--font-sans); font-weight: 300;
+  font-family: var(--font-sans);
+  font-weight: 400;
   font-size: 0.85rem;
-  outline: none;
-  transition: border-color 0.3s ease;
+  color: #b2cbbd;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.input::placeholder { color: var(--text-muted); }
-
-.input:focus {
-  border-color: rgba(201, 169, 110, 0.3);
+.link:hover {
+  color: #d4af37;
 }
 
-.submitBtn {
-  padding: 12px 20px;
-  background: rgba(201, 169, 110, 0.15);
-  border: 1px solid rgba(201, 169, 110, 0.2);
-  border-radius: 0 10px 10px 0;
-  color: var(--gold);
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s var(--ease-luxury);
+.linkComingSoon {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #556b60;
 }
 
-.submitBtn:hover {
-  background: var(--gradient-gold);
-  color: var(--black-pure);
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #b2cbbd;
+}
+
+.contactIcon {
+  color: #b2cbbd;
+  flex-shrink: 0;
+}
+
+.contactLink {
+  color: #b2cbbd;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.contactLink:hover {
+  color: #d4af37;
+}
+
+.contactText {
+  color: #b2cbbd;
 }
 
 .bottom {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   padding-top: 30px;
 }
 
 .copy {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.75rem; color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #a2bba9;
 }
 
-.bottomLinks { display: flex; gap: 24px; }
-
-.bottomLink {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.75rem; color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.3s ease;
+.compliance {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #a2bba9;
 }
-
-.bottomLink:hover { color: var(--gold); }
 
 @media (max-width: 968px) {
-  .grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
 }
 
 @media (max-width: 600px) {
-  .grid { grid-template-columns: 1fr; gap: 36px; }
-  .bottom { flex-direction: column; gap: 16px; text-align: center; }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
 }

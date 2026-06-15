@@ -19,7 +19,14 @@ const getStoredProducts = () => {
 
 const saveStoredProducts = (products) => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22 || e.number === 0x8007000E) {
+      throw new Error("Browser storage is full! This happens because uploaded images are saved as large raw Base64 data. Please upload smaller, highly compressed images (under 100KB) or clear your browser's site data.");
+    }
+    throw e;
+  }
 };
 
 const mapDbProductToFrontend = (prod) => ({

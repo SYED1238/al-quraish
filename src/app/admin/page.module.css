@@ -1,7 +1,7 @@
 .pageWrapper {
   position: relative;
   min-height: 100vh;
-  background: transparent;
+  background: #fafaf6;
   color: var(--text-primary);
   overflow: hidden;
   --black-card: #ffffff;
@@ -15,7 +15,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--black-pure);
+  background: #fafaf6;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +27,36 @@
   font-family: var(--font-sans);
   font-size: 0.75rem;
   letter-spacing: 0.2em;
-  color: var(--gold-light);
+  color: #6b7280;
+}
+
+/* Spinner Styles */
+.spinner {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+.doubleSpinner1,
+.doubleSpinner2 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(12, 81, 50, 0.1);
+  border-top-color: #0c5132;
+  animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.doubleSpinner2 {
+  animation-delay: -0.4s;
+  border-top-color: #d4af37;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Restricted view styling */

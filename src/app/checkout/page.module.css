@@ -1,8 +1,8 @@
 .pageContainer {
   position: relative;
   min-height: 100vh;
-  background: transparent;
-  color: var(--text-primary);
+  background: #fafaf6;
+  color: #111827;
 }
 
 /* Loading & Redirect screen */
@@ -10,7 +10,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--black-pure);
+  background: #fafaf6;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,14 +30,14 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 2px solid rgba(212, 175, 55, 0.1);
-  border-top-color: #d4af37;
+  border: 2px solid rgba(12, 81, 50, 0.1);
+  border-top-color: #0c5132;
   animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 .doubleSpinner2 {
   animation-delay: -0.4s;
-  border-top-color: #f5e6c8;
+  border-top-color: #d4af37;
 }
 
 @keyframes spin {
@@ -50,7 +50,7 @@
   font-family: var(--font-sans);
   font-size: 0.75rem;
   letter-spacing: 0.2em;
-  color: var(--gold-light);
+  color: #6b7280;
 }
 
 /* Back Link */
@@ -63,7 +63,7 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: #6b7280;
   text-decoration: none;
   margin-bottom: 24px;
   transition: color 0.3s;
@@ -72,7 +72,7 @@
 }
 
 .backLink:hover {
-  color: var(--gold);
+  color: #0c5132;
 }
 
 /* Main content container */
@@ -90,6 +90,7 @@
   margin-bottom: 40px;
   position: relative;
   z-index: 2;
+  color: #111827;
 }
 
 /* Checkout 2-column Grid */
@@ -120,7 +121,11 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  /* Background, blur, border all come from the GlassCard wrapper — no duplicates */
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
 }
 
 .sectionHeader {
@@ -142,18 +147,19 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(212, 175, 55, 0.05);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(12, 81, 50, 0.06);
+  border: 1px solid rgba(12, 81, 50, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #0c5132 !important;
 }
 
 .sectionTitle {
   font-family: var(--font-serif);
   font-size: 1.3rem;
-  font-weight: 400;
-  color: #fff;
+  font-weight: 500;
+  color: #111827;
   letter-spacing: 0.02em;
 }
 
@@ -161,11 +167,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 8px;
-  padding: 8px 14px;
-  color: #F4E6C0;
+  background: #0c5132;
+  border: 1px solid #0c5132;
+  border-radius: 50px;
+  padding: 8px 16px;
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 600;
@@ -174,8 +180,8 @@
 }
 
 .btnAddAddressToggle:hover {
-  background: rgba(212, 175, 55, 0.15);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
+  background: #053b24;
+  box-shadow: 0 4px 12px rgba(12, 81, 50, 0.15);
 }
 
 .btnLocation {
@@ -183,11 +189,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 10px;
+  background: rgba(12, 81, 50, 0.06);
+  border: 1px solid rgba(12, 81, 50, 0.15);
+  border-radius: 50px;
   padding: 12px 18px;
-  color: #F4E6C0;
+  color: #0c5132;
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 600;
@@ -199,9 +205,9 @@
 }
 
 .btnLocation:hover:not(:disabled) {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+  background: rgba(12, 81, 50, 0.1);
+  border-color: rgba(12, 81, 50, 0.3);
+  box-shadow: 0 4px 15px rgba(12, 81, 50, 0.08);
   transform: translateY(-1px);
 }
 
@@ -213,8 +219,8 @@
 .loaderSmall {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(212, 175, 55, 0.15);
-  border-top: 2px solid var(--gold);
+  border: 2px solid rgba(12, 81, 50, 0.15);
+  border-top: 2px solid #0c5132;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: inline-block;
@@ -224,9 +230,9 @@
   display: inline-flex;
   align-items: center;
   font-size: 0.75rem;
-  color: #52b788;
-  background: rgba(82, 183, 136, 0.05);
-  border: 1px solid rgba(82, 183, 136, 0.15);
+  color: #0c5132;
+  background: rgba(12, 81, 50, 0.04);
+  border: 1px solid rgba(12, 81, 50, 0.15);
   padding: 8px 12px;
   border-radius: 8px;
   width: 100%;
@@ -256,8 +262,8 @@
 }
 
 .addressCard {
-  background: rgba(10, 42, 32, 0.35);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 20px;
   cursor: pointer;
@@ -268,14 +274,15 @@
 }
 
 .addressCard:hover {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(10, 42, 32, 0.45);
+  border-color: #0c5132;
+  background: #f0f7f4;
+  box-shadow: 0 4px 15px rgba(12, 81, 50, 0.06);
 }
 
 .addressCardSelected {
-  background: rgba(212, 175, 55, 0.06);
-  border-color: rgba(212, 175, 55, 0.65) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  background: #f0f7f4;
+  border-color: #0c5132 !important;
+  box-shadow: 0 4px 20px rgba(12, 81, 50, 0.08);
 }
 
 .addressCardHeader {
@@ -289,7 +296,7 @@
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.88rem;
-  color: #fff;
+  color: #111827;
 }
 
 .selectedIndicator {
@@ -297,10 +304,10 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(212, 175, 55, 0.12);
-  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  background: #0c5132;
+  border: 1.5px solid #0c5132;
   border-radius: 20px;
-  color: #F4E6C0;
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: 0.6rem;
   font-weight: 600;
@@ -310,23 +317,23 @@
 
 .defaultBadge {
   padding: 2px 6px;
-  background: rgba(82, 183, 136, 0.06);
-  border: 1px solid rgba(82, 183, 136, 0.2);
+  background: rgba(12, 81, 50, 0.06);
+  border: 1px solid rgba(12, 81, 50, 0.15);
   border-radius: 20px;
   font-size: 0.6rem;
   font-weight: 600;
-  color: #52b788;
+  color: #0c5132;
 }
 
 .addressContact {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   margin-bottom: 12px;
 }
 
 .addressLines {
   font-size: 0.82rem;
-  color: var(--text-secondary);
+  color: #4b5563;
   line-height: 1.45;
   margin-top: auto;
 }
@@ -334,10 +341,10 @@
 .noAddressesState {
   text-align: center;
   padding: 40px 20px;
-  border: 1px dashed rgba(255, 255, 255, 0.06);
+  border: 1px dashed #d1d5db;
   border-radius: 12px;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: #6b7280;
 }
 
 /* Address inline form */
@@ -354,8 +361,8 @@
 .formSubtitle {
   font-family: var(--font-serif);
   font-size: 1.1rem;
-  font-weight: 400;
-  color: #fff;
+  font-weight: 500;
+  color: #111827;
   margin-bottom: 8px;
   letter-spacing: 0.02em;
 }
@@ -376,18 +383,18 @@
 
 .inputLabel {
   font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold-light);
+  color: #6b7280;
 }
 
 .goldInput {
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 14px;
-  color: #F4E6C0;
+  color: #111827;
   font-family: var(--font-outfit), var(--font-sans);
   font-size: 0.88rem;
   outline: none;
@@ -396,10 +403,14 @@
   box-sizing: border-box;
 }
 
+.goldInput::placeholder {
+  color: #9ca3af;
+}
+
 .goldInput:focus {
-  border-color: rgba(212, 175, 55, 0.7);
-  box-shadow: none;
-  background: rgba(255, 255, 255, 0.08);
+  border-color: #0c5132;
+  box-shadow: 0 4px 12px rgba(12, 81, 50, 0.04);
+  background: #ffffff;
 }
 
 .checkboxGroup {
@@ -413,7 +424,7 @@
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  border: 1.5px solid #d1d5db;
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
@@ -424,20 +435,20 @@
 }
 
 .goldCheckbox:checked {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: #0c5132;
+  border-color: #0c5132;
 }
 
 .goldCheckbox:checked::after {
   content: '✓';
-  color: var(--black-pure);
+  color: #ffffff;
   font-size: 11px;
   font-weight: bold;
 }
 
 .checkboxGroup label {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #4b5563;
   cursor: pointer;
 }
 
@@ -449,10 +460,10 @@
 
 .errorMessage {
   padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.15);
   border-radius: 8px;
-  color: #f87171;
+  color: #dc2626;
   font-size: 0.8rem;
 }
 
@@ -464,8 +475,8 @@
 }
 
 .paymentCard {
-  background: rgba(10, 42, 32, 0.35);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 20px;
   cursor: pointer;
@@ -476,27 +487,27 @@
 }
 
 .paymentCard:hover:not(.paymentCardDisabled) {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(10, 42, 32, 0.45);
+  border-color: #0c5132;
+  background: #f0f7f4;
 }
 
 .paymentCardSelected {
-  background: rgba(212, 175, 55, 0.06);
-  border-color: rgba(212, 175, 55, 0.65);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  background: #f0f7f4;
+  border-color: #0c5132;
+  box-shadow: 0 4px 15px rgba(12, 81, 50, 0.06);
 }
 
 .paymentCardDisabled {
   opacity: 0.45;
   cursor: not-allowed;
-  background: rgba(255, 255, 255, 0.005);
+  background: #fafafa;
 }
 
 .paymentRadioIcon {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border: 1.5px solid #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -505,7 +516,7 @@
 }
 
 .paymentCardSelected .paymentRadioIcon {
-  border-color: var(--gold);
+  border-color: #0c5132;
 }
 
 .paymentRadioInner {
@@ -520,7 +531,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--gold);
+  background: #0c5132;
 }
 
 .paymentRadioInnerDisabled {
@@ -540,24 +551,24 @@
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.88rem;
-  color: #fff;
+  color: #111827;
 }
 
 .upcomingBadge {
   padding: 1px 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #fdf6e2;
+  border: 1px solid #e5ddc8;
   border-radius: 4px;
   font-size: 0.55rem;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  color: var(--text-muted);
+  color: #a17a15;
 }
 
 .paymentDesc {
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   line-height: 1.4;
 }
 
@@ -573,7 +584,11 @@
 
 .summaryCard {
   padding: 30px;
-  /* Background, blur, border all come from the GlassCard wrapper — no duplicates */
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
   position: sticky;
   top: 140px;
 }
@@ -581,15 +596,15 @@
 .summaryTitle {
   font-family: var(--font-serif);
   font-size: 1.4rem;
-  font-weight: 400;
-  color: #fff;
+  font-weight: 500;
+  color: #111827;
   letter-spacing: 0.02em;
 }
 
 .summarySubtitle {
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   margin-top: 4px;
   margin-bottom: 24px;
 }
@@ -603,7 +618,7 @@
   overflow-y: auto;
   padding-right: 6px;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .cartItemsScrollList::-webkit-scrollbar {
@@ -615,7 +630,7 @@
 }
 
 .cartItemsScrollList::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.25);
+  background: rgba(12, 81, 50, 0.2);
   border-radius: 4px;
 }
 
@@ -631,8 +646,8 @@
   border-radius: 8px;
   overflow: hidden;
   position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: #eaeae6;
+  border: 1px solid #f3f4f6;
   flex-shrink: 0;
 }
 
@@ -645,7 +660,7 @@
 
 .summaryItemName {
   font-size: 0.82rem;
-  color: #fff;
+  color: #111827;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -654,15 +669,15 @@
 
 .summaryItemVariant {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   margin-top: 1px;
 }
 
 .summaryItemPrice {
   font-family: var(--font-outfit), var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.82rem;
-  color: var(--gold-light);
+  color: #0c5132;
   flex-shrink: 0;
 }
 
@@ -678,11 +693,11 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.82rem;
-  color: var(--text-secondary);
+  color: #6b7280;
 }
 
 .calcRowHighlight {
-  color: var(--emerald-glow);
+  color: #0c5132;
 }
 
 .calcRowTotal {
@@ -691,15 +706,15 @@
   align-items: center;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #fff;
+  color: #111827;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid #f3f4f6;
 }
 
 .calcRowTotal span:last-child {
   font-family: var(--font-outfit), var(--font-sans);
   font-size: 1.3rem;
-  color: #F4E6C0;
+  color: #0c5132;
 }
 
 .alertAddressPending {
@@ -710,7 +725,7 @@
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.15);
   border-radius: 8px;
-  color: #f87171;
+  color: #dc2626;
   font-size: 0.75rem;
   line-height: 1.3;
   margin-top: 16px;
@@ -719,7 +734,7 @@
 /* Premium Verification screen overlay */
 .verificationRequiredScreen {
   min-height: 100vh;
-  background: var(--black-deep);
+  background: #fafaf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -741,17 +756,17 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.05);
-  border: 2px solid rgba(212, 175, 55, 0.25);
+  background: rgba(12, 81, 50, 0.04);
+  border: 2px solid rgba(12, 81, 50, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(212, 175, 55, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
   margin-bottom: 30px;
 }
 
 .goldEmblemIcon {
-  color: var(--gold);
+  color: #0c5132;
 }
 
 .verificationTitle {
@@ -759,13 +774,13 @@
   font-size: 1.8rem;
   font-weight: 400;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: #111827;
   margin-bottom: 12px;
 }
 
 .verificationText {
   font-size: 0.88rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   line-height: 1.5;
   margin-bottom: 30px;
 }
@@ -773,8 +788,8 @@
 .verificationDetailsCard {
   width: 100%;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -787,7 +802,7 @@
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #6b7280;
   letter-spacing: 0.1em;
 }
 
@@ -795,12 +810,12 @@
   font-family: var(--font-outfit), var(--font-sans);
   font-size: 1.05rem;
   font-weight: 600;
-  color: #F4E6C0;
+  color: #111827;
 }
 
 .verificationInstructions {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   line-height: 1.4;
   margin-top: 8px;
 }
@@ -815,7 +830,7 @@
 /* Success Screen */
 .successScreen {
   min-height: 100vh;
-  background: var(--black-deep);
+  background: #fafaf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -828,11 +843,10 @@
   max-width: 550px;
   width: 100%;
   padding: 50px 40px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(212, 175, 55, 0.05);
-  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -843,38 +857,38 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: rgba(82, 183, 136, 0.06);
-  border: 2px solid rgba(82, 183, 136, 0.35);
+  background: rgba(12, 81, 50, 0.04);
+  border: 2px solid rgba(12, 81, 50, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px rgba(12, 81, 50, 0.06);
   margin-bottom: 30px;
 }
 
 .successCheckIcon {
-  color: #52b788;
+  color: #0c5132;
 }
 
 .successTitle {
   font-family: var(--font-serif);
   font-size: 1.8rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: #111827;
   margin-bottom: 6px;
 }
 
 .successSubtitle {
   font-size: 0.88rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   margin-bottom: 36px;
 }
 
 .successDetails {
   width: 100%;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
   border-radius: 16px;
   padding: 20px 24px;
   display: flex;
@@ -891,17 +905,17 @@
 }
 
 .successLabel {
-  color: var(--text-secondary);
+  color: #6b7280;
 }
 
 .successValue {
   font-weight: 600;
-  color: #fff;
+  color: #111827;
 }
 
 .successNotice {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #6b7280;
   line-height: 1.45;
   margin-bottom: 36px;
 }
@@ -923,6 +937,43 @@
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 16px;
+}
+
+/* ── Empty Cart Card ─────────────────────────────────────────── */
+.emptyCartCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  max-width: 500px;
+  margin: 40px auto 0;
+}
+
+.emptyCartIcon {
+  color: #0c5132;
+  margin-bottom: 20px;
+}
+
+.emptyCartTitle {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.emptyCartSubtitle {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: #6b7280;
+  max-width: 320px;
+  line-height: 1.5;
+  margin-bottom: 24px;
 }
 
 /* ── Mobile First Redesign & Quiet Luxury Spacing ───────────────── */

@@ -101,13 +101,6 @@ function CheckoutContent() {
     }
   }, [user, authLoading, router]);
 
-  // If cart is empty and order wasn't successfully placed, redirect to catalog
-  useEffect(() => {
-    if (!authLoading && cart.length === 0 && !orderSuccess && !placingOrder) {
-      router.push('/premium-poultry');
-    }
-  }, [cart, authLoading, orderSuccess, placingOrder, router]);
-
 
 
   // Geolocation and Reverse Geocoding Handler
@@ -173,9 +166,13 @@ function CheckoutContent() {
       },
       (error) => {
         console.error('Geolocation error:', error);
-        let errorMsg = 'Failed to acquire location. Please grant permission or type address manually.';
+        let errorMsg = 'Could not detect location. You can type your address manually below.';
         if (error.code === error.PERMISSION_DENIED) {
-          errorMsg = 'Location access denied. Please enable location permissions in your browser.';
+          errorMsg = 'Location access was denied. To enable: go to your phone Settings → Privacy/Location → turn on Location Services, then allow this browser to access location. You can also type your address manually below.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMsg = 'Location unavailable. Please turn on GPS/Location in your phone Settings → Privacy/Location, then try again. You can also type your address manually below.';
+        } else if (error.code === error.TIMEOUT) {
+          errorMsg = 'Location request timed out. Please ensure GPS is enabled in your phone Settings and try again, or type your address manually below.';
         }
         setAddressError(errorMsg);
         setFetchingLocation(false);
@@ -243,10 +240,8 @@ _Please forward this message to the dispatch/delivery staff._`;
     e.preventDefault();
     setAddressError('');
 
-    if (!newAddress.latitude || !newAddress.longitude) {
-      setAddressError('GPS coordinates are compulsory. Please click "Use Current Location" to capture your location before saving.');
-      return;
-    }
+    // GPS coordinates are optional — users may not have location services enabled
+    // We still encourage using location but don't block the order
 
     if (
       !newAddress.full_name ||
@@ -384,7 +379,7 @@ _Please forward this message to the dispatch/delivery staff._`;
           <div className={styles.successDetails}>
             <div className={styles.successRow}>
               <span className={styles.successLabel}>Order Number</span>
-              <span className={styles.successValue} style={{ color: 'var(--gold)' }}>{orderSuccess}</span>
+              <span className={styles.successValue} style={{ color: '#0c5132' }}>{orderSuccess}</span>
             </div>
             <div className={styles.successRow}>
               <span className={styles.successLabel}>Payment Method</span>
@@ -408,7 +403,7 @@ _Please forward this message to the dispatch/delivery staff._`;
                 rel="noopener noreferrer"
                 className={`btn-primary ${styles.btnWhatsapp}`}
                 id="btn-whatsapp-confirm"
-                style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '16px 24px', background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', borderColor: '#25D366' }}
+                style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '16px 24px', background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', border: '1px solid #25D366', color: '#ffffff' }}
               >
                 <Smartphone size={16} />
                 <span>Send Order to Store Owner</span>
@@ -461,7 +456,17 @@ _Please forward this message to the dispatch/delivery staff._`;
           <span className="text-gold-gradient">CHECKOUT.</span>
         </h1>
 
-        <div className={styles.checkoutGrid}>
+        {cart.length === 0 ? (
+          <div className={styles.emptyCartCard}>
+            <ShoppingBag size={48} className={styles.emptyCartIcon} />
+            <h2 className={styles.emptyCartTitle}>Your bag is empty</h2>
+            <p className={styles.emptyCartSubtitle}>Browse our premium catalog to add fresh selections to your cart.</p>
+            <Link href="/premium-poultry" className="btn-primary" style={{ marginTop: '24px' }}>
+              Press to Shop
+            </Link>
+          </div>
+        ) : (
+          <div className={styles.checkoutGrid}>
 
           {/* Left Column: Delivery Details & Payment */}
           <div className={styles.mainCol}>
@@ -559,7 +564,7 @@ _Please forward this message to the dispatch/delivery staff._`;
 
                   {newAddress.latitude && newAddress.longitude && (
                     <div className={styles.locationSuccess} id="location-success-indicator">
-                      <Check size={10} className="text-emerald" style={{ color: '#52b788', marginRight: '6px' }} />
+                      <Check size={10} style={{ color: '#0c5132', marginRight: '6px' }} />
                       <span>GPS Coordinates Captured: {newAddress.latitude.toFixed(6)}, {newAddress.longitude.toFixed(6)}</span>
                     </div>
                   )}
@@ -697,7 +702,7 @@ _Please forward this message to the dispatch/delivery staff._`;
                         type="button"
                         onClick={() => setShowAddressForm(false)}
                         className="btn-glass"
-                        style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+                        style={{ borderColor: 'rgba(209, 213, 219, 0.6)' }}
                         id="btn-cancel-address"
                       >
                         Cancel
@@ -827,7 +832,7 @@ _Please forward this message to the dispatch/delivery staff._`;
                     <Truck size={12} className="text-gold" />
                     <span>Cold-Chain Delivery</span>
                   </span>
-                  <span style={{ color: 'var(--emerald-glow)' }}>Complimentary</span>
+                  <span style={{ color: '#0c5132' }}>Complimentary</span>
                 </div>
                 <div className={styles.calcRowTotal}>
                   <span>Grand Total</span>
@@ -863,6 +868,7 @@ _Please forward this message to the dispatch/delivery staff._`;
           </div>
 
         </div>
+        )}
       </main>
 
       <Footer />

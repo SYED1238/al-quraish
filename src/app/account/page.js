@@ -204,9 +204,13 @@ function AccountDashboard() {
       },
       (error) => {
         console.error('Geolocation error:', error);
-        let errorMsg = 'Failed to acquire location. Please grant permission or type address manually.';
+        let errorMsg = 'Could not detect location. You can type your address manually below.';
         if (error.code === error.PERMISSION_DENIED) {
-          errorMsg = 'Location access denied. Please enable location permissions in your browser.';
+          errorMsg = 'Location access was denied. To enable: go to your phone Settings → Privacy/Location → turn on Location Services, then allow this browser to access location. You can also type your address manually below.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMsg = 'Location unavailable. Please turn on GPS/Location in your phone Settings → Privacy/Location, then try again. You can also type your address manually below.';
+        } else if (error.code === error.TIMEOUT) {
+          errorMsg = 'Location request timed out. Please ensure GPS is enabled in your phone Settings and try again, or type your address manually below.';
         }
         setAddressError(errorMsg);
         setFetchingLocation(false);
@@ -218,10 +222,8 @@ function AccountDashboard() {
   const handleAddAddress = async (e) => {
     e.preventDefault();
     setAddressError('');
-    if (!newAddress.latitude || !newAddress.longitude) {
-      setAddressError('GPS coordinates are compulsory. Please click "Use Current Location" to capture your location before saving.');
-      return;
-    }
+    // GPS coordinates are optional — users may not have location services enabled
+    // We still encourage using location but don't block the save
     if (
       !newAddress.full_name ||
       !newAddress.phone ||
@@ -406,7 +408,7 @@ function AccountDashboard() {
                       <span className={styles.inputLabel}>Verification Status</span>
                       <div className={styles.disabledInput} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d4af37' }}></span>
-                        <span style={{ color: '#F4E6C0' }}>Verified Gold Account</span>
+                        <span style={{ color: '#111827' }}>Verified Gold Account</span>
                       </div>
                     </div>
 
@@ -489,14 +491,14 @@ function AccountDashboard() {
                           {order.address && (
                             <div className={styles.orderAddressBlock} style={{
                               padding: '16px 20px',
-                              borderTop: '1px solid rgba(255, 255, 255, 0.03)',
-                              background: 'rgba(255, 255, 255, 0.01)',
+                              borderTop: '1px solid #e5e7eb',
+                              background: '#fafaf6',
                               fontSize: '0.8rem',
-                              color: 'var(--text-secondary)'
+                              color: '#4b5563'
                             }}>
                               <span className={styles.orderIdLabel} style={{ marginBottom: '6px' }}>Delivery Address</span>
-                              <div style={{ color: '#fff', fontWeight: '500', marginBottom: '2px' }}>
-                                {order.address.full_name} <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>| {order.address.phone}</span>
+                              <div style={{ color: '#111827', fontWeight: '500', marginBottom: '2px' }}>
+                                {order.address.full_name} <span style={{ color: '#6b7280', fontWeight: '400' }}>| {order.address.phone}</span>
                               </div>
                               <div>
                                 {order.address.address_line_1}
@@ -546,39 +548,11 @@ function AccountDashboard() {
                         onClick={handleGetCurrentLocation}
                         className={styles.btnLocation}
                         disabled={fetchingLocation}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          background: 'rgba(212, 175, 55, 0.08)',
-                          border: '1px solid rgba(212, 175, 55, 0.25)',
-                          borderRadius: '10px',
-                          padding: '12px 18px',
-                          color: '#F4E6C0',
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          transition: 'all 0.3s',
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          marginTop: '4px',
-                          marginBottom: '12px'
-                        }}
                         id="btn-use-location"
                       >
                         {fetchingLocation ? (
                           <>
-                            <span className={styles.loaderSmall} style={{
-                              width: '14px',
-                              height: '14px',
-                              border: '2px solid rgba(212, 175, 55, 0.15)',
-                              borderTop: '2px solid var(--gold)',
-                              borderRadius: '50%',
-                              animation: 'spin 0.8s linear infinite',
-                              display: 'inline-block'
-                            }}></span>
+                            <span className={styles.loaderSmall}></span>
                             <span>Acquiring GPS Signal...</span>
                           </>
                         ) : (
@@ -747,7 +721,7 @@ function AccountDashboard() {
                                 });
                               }}
                               className="btn-glass"
-                              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+                              style={{ borderColor: '#e5e7eb', color: '#4b5563' }}
                             >
                               Cancel
                             </button>
@@ -775,8 +749,8 @@ function AccountDashboard() {
                             </div>
 
                             <p className={styles.addressLines} style={{ marginBottom: '12px' }}>
-                              <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{addr.full_name}</strong><br />
-                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{addr.phone} | {addr.email}</span>
+                              <strong style={{ color: '#111827', fontSize: '0.9rem' }}>{addr.full_name}</strong><br />
+                              <span style={{ color: '#6b7280', fontSize: '0.78rem' }}>{addr.phone} | {addr.email}</span>
                             </p>
 
                             <p className={styles.addressLines}>
@@ -784,7 +758,7 @@ function AccountDashboard() {
                               {addr.address_line_2 && <>{addr.address_line_2}<br /></>}
                               {addr.city}, {addr.state} — {addr.pincode}
                               {addr.latitude && addr.longitude && (
-                                <span style={{ display: 'block', marginTop: '6px', fontSize: '0.72rem', color: 'var(--gold-light)', fontStyle: 'italic' }}>
+                                <span style={{ display: 'block', marginTop: '6px', fontSize: '0.72rem', color: '#0c5132', fontStyle: 'italic' }}>
                                   GPS Coords: {addr.latitude.toFixed(6)}, {addr.longitude.toFixed(6)}
                                 </span>
                               )}

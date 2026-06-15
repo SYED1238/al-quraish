@@ -239,13 +239,11 @@
   right: 0;
   margin-top: 12px;
   width: 200px;
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(251, 226, 178, 0.1);
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   padding: 8px 0;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 15px rgba(201, 169, 110, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 .dropdownItem {
@@ -253,27 +251,28 @@
   align-items: center;
   gap: 12px;
   padding: 12px 20px;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  transition: all 0.3s ease;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #4b5563;
+  transition: all 0.2s ease;
   width: 100%;
   text-align: left;
 }
 
 .dropdownItem:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--gold-light);
+  background: #f0f7f4;
+  color: #0c5132;
   padding-left: 24px;
 }
 
 .dropdownItemLogout {
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  color: #ef4444;
+  border-top: 1px solid #f3f4f6;
+  color: #dc2626;
 }
 
 .dropdownItemLogout:hover {
-  background: rgba(239, 68, 68, 0.05);
-  color: #f87171;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 /* ── Modal Glassmorphism Authentication ──────────────────────── */
@@ -879,4 +878,80 @@
 
 .helperText {
   line-height: 1.3;
+}
+
+/* ── Cart Badge & Tooltip ────────────────────────────────────── */
+.cartBadge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #0c5132;
+  color: #ffffff;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  animation: cartBadgePop 0.3s var(--ease-luxury);
+}
+
+@keyframes cartBadgePop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.cartTooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: max-content;
+  max-width: 240px;
+  padding: 10px 16px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 10px;
+  color: #F4E6C0;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  animation: tooltipFadeIn 0.25s ease-out;
+  z-index: 200;
+  white-space: nowrap;
+}
+
+.cartTooltip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  background: rgba(10, 10, 10, 0.95);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  border-left: 1px solid rgba(212, 175, 55, 0.15);
+  transform: rotate(45deg);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

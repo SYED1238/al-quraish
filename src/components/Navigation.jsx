@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -23,6 +23,7 @@ import {
   Search
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCartWishlist } from '../context/CartWishlistContext';
 import styles from './Navigation.module.css';
 
 const menuItems = [
@@ -42,8 +43,15 @@ export default function Navigation() {
   const pathname = usePathname();
   const isSubpage = pathname !== '/';
 
+  const router = useRouter();
+
   // Auth Context
   const { user, profile, authModalOpen, setAuthModalOpen, signInWithPassword, signUpWithPassword, sendPasswordResetEmail, signOut } = useAuth();
+
+  // Cart Context
+  const { cart } = useCartWishlist();
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const [cartTooltip, setCartTooltip] = useState('');
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -327,17 +335,6 @@ export default function Navigation() {
   return (
     <header className={`${styles.headerWrapper} ${scrolled ? styles.scrolled : ''}`}>
 
-      {/* ── Top Notification Bar ───────────────────────────────── */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarContainer}>
-          <span className={styles.topBarText}>Free delivery on orders above ₹599 in Ramanagara</span>
-          <a href="tel:+919663065918" className={styles.topBarPhone}>
-            <Phone size={12} style={{ marginRight: '4px' }} />
-            <span>+91 96630 65918</span>
-          </a>
-        </div>
-      </div>
-
       {/* ── Main Navigation Bar ──────────────────────────────────── */}
       <nav ref={navRef} className={styles.nav}>
         <div className={styles.container}>
@@ -432,9 +429,37 @@ export default function Navigation() {
             )}
 
             {/* Cart Icon */}
-            <Link href="/checkout" className={styles.iconButton} aria-label="Cart">
+            <button
+              className={styles.iconButton}
+              aria-label="Cart"
+              style={{ position: 'relative' }}
+              onClick={() => {
+                if (!user) {
+                  // Not logged in — open login modal
+                  setAuthModalOpen(true);
+                  setLoginStep('LOGIN');
+                  setErrorText('');
+                  setPhone('');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setFullName('');
+                  setShowSignInPassword(false);
+                  setShowSignUpPassword(false);
+                  setShowConfirmPassword(false);
+                  return;
+                }
+                // Logged in — go to checkout
+                router.push('/checkout');
+              }}
+            >
               <ShoppingBag size={20} />
-            </Link>
+              {cartItemCount > 0 && (
+                <span className={styles.cartBadge}>{cartItemCount}</span>
+              )}
+              {cartTooltip && (
+                <span className={styles.cartTooltip}>{cartTooltip}</span>
+              )}
+            </button>
 
             <button
               className={`${styles.burger} ${mobileOpen ? styles.burgerOpen : ''}`}
