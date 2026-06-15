@@ -1,104 +1,114 @@
 .section {
   position: relative;
-  padding: var(--section-padding) 0;
-  background: var(--black-pure);
-  overflow: hidden;
-}
-
-.bgLayers { position: absolute; inset: 0; pointer-events: none; }
-
-.glow1 {
-  position: absolute; width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(45, 106, 79, 0.05) 0%, transparent 60%);
-  top: 20%; left: -100px;
-  animation: floatGlow 20s ease-in-out infinite;
-}
-
-.glow2 {
-  position: absolute; width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
-  bottom: 10%; right: -100px;
-  animation: floatGlow 18s ease-in-out infinite reverse;
+  z-index: 1;
+  background: var(--black-deep);
+  padding: 60px 0;
+  width: 100%;
 }
 
 .container {
-  max-width: var(--container-width);
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--container-padding);
+  padding: 0 24px;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 40px;
 }
 
 .label {
-  display: inline-block;
-  font-family: var(--font-sans); font-weight: 500;
-  font-size: 0.65rem; letter-spacing: 0.3em;
-  text-transform: uppercase; color: var(--gold);
-  margin-bottom: 24px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #0c5132;
 }
 
 .heading {
-  font-family: var(--font-serif); font-weight: 400;
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  line-height: 1; letter-spacing: -0.02em;
-  margin-bottom: 28px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-weight: 400;
+  color: #062a1c;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-.desc {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 1rem; color: var(--text-secondary);
-  line-height: 1.8; max-width: 440px;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
 }
 
-.right {
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(12, 81, 50, 0.08);
+  border-radius: 20px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
 }
 
-.reasonCard {
-  display: flex; gap: 20px; align-items: flex-start;
-  padding: 24px 28px; border-radius: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.5s var(--ease-luxury);
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 16px 40px rgba(10, 42, 32, 0.08);
 }
 
-.reasonCard:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(8px);
+.iconCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #eef7f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  transition: background 0.3s;
 }
 
-.reasonNumber {
-  font-family: var(--font-serif); font-weight: 300;
-  font-size: 2rem; color: var(--gold-dark);
-  line-height: 1; flex-shrink: 0;
-  opacity: 0.5;
+.card:hover .iconCircle {
+  background: #e2f2e9;
 }
 
-.reasonTitle {
-  font-family: var(--font-sans); font-weight: 600;
-  font-size: 0.95rem; color: var(--text-primary);
-  margin-bottom: 6px;
+.icon {
+  color: #0c5132;
 }
 
-.reasonDesc {
-  font-family: var(--font-sans); font-weight: 300;
-  font-size: 0.85rem; color: var(--text-tertiary);
-  line-height: 1.6;
+.cardTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #062a1c;
+  margin: 0;
 }
 
-@keyframes floatGlow {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-15px, 15px) scale(1.05); }
+.cardDesc {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.82rem;
+  color: #2d4036;
+  line-height: 1.5;
+  margin: 0;
 }
 
-@media (max-width: 968px) {
-  .layout { grid-template-columns: 1fr; gap: 48px; }
+@media (max-width: 991px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 580px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }

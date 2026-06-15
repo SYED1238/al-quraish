@@ -17,7 +17,10 @@ import {
   Save,
   X,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Plus,
+  Trash2,
+  Camera
 } from 'lucide-react';
 import { dbService } from '../../services/db';
 import { productsService } from '../../services/products';
@@ -41,11 +44,24 @@ function AdminDashboardContent() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productsError, setProductsError] = useState('');
-  const [drafts, setDrafts] = useState({}); // { [id]: { price, stock, availability } }
+  const [drafts, setDrafts] = useState({}); // { [id]: { name, image, price, stock, availability } }
   const [bulkPercent, setBulkPercent] = useState('');
   const [priceLogs, setPriceLogs] = useState([]);
   const [savingProducts, setSavingProducts] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Add product form modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newProductForm, setNewProductForm] = useState({
+    id: '',
+    name: '',
+    category: 'Chicken',
+    price: '',
+    stock: 50,
+    image: '',
+    description: '',
+    weightVariants: '250g, 500g, 750g, 1kg, 2kg'
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -148,6 +164,8 @@ function AdminDashboardContent() {
       if (!currentProduct) return prev;
       
       const currentDraft = prev[productId] || {
+        name: currentProduct.name,
+        image: currentProduct.image,
         price: currentProduct.price,
         stock: currentProduct.stock,
         availability: currentProduct.availability || 'In Stock'
@@ -163,6 +181,28 @@ function AdminDashboardContent() {
     });
   };
 
+  const triggerImageUpload = (productId) => {
+    const input = document.getElementById(`image-upload-${productId}`);
+    if (input) input.click();
+  };
+
+  const handleImageUpload = (productId, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image is too large. Please select an image under 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      handleFieldChange(productId, 'image', base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleBulkAdjustment = (type) => {
     const percent = parseFloat(bulkPercent);
     if (isNaN(percent) || percent <= 0) {
@@ -176,6 +216,8 @@ function AdminDashboardContent() {
       const newDrafts = { ...prev };
       products.forEach(product => {
         const currentDraft = newDrafts[product.id] || {
+          name: product.name,
+          image: product.image,
           price: product.price,
           stock: product.stock,
           availability: product.availability || 'In Stock'
@@ -200,6 +242,8 @@ function AdminDashboardContent() {
       if (!original) return false;
       const draft = drafts[id];
       return (
+        draft.name !== original.name ||
+        draft.image !== original.image ||
         Number(draft.price) !== Number(original.price) ||
         Number(draft.stock) !== Number(original.stock) ||
         draft.availability !== original.availability
@@ -221,19 +265,31 @@ function AdminDashboardContent() {
         const original = products.find(p => p.id === id);
         const draft = drafts[id];
 
-        const updateData = {
-          price: Number(draft.price),
-          stock: Number(draft.stock),
-          availability: draft.availability
-        };
+        const updateData = {};
+        if (draft.name !== undefined && draft.name !== original.name) {
+          updateData.name = draft.name;
+        }
+        if (draft.image !== undefined && draft.image !== original.image) {
+          updateData.image = draft.image;
+          updateData.heroImage = draft.image;
+        }
+        if (draft.price !== undefined && Number(draft.price) !== Number(original.price)) {
+          updateData.price = Number(draft.price);
+        }
+        if (draft.stock !== undefined && Number(draft.stock) !== Number(original.stock)) {
+          updateData.stock = Number(draft.stock);
+        }
+        if (draft.availability !== undefined && draft.availability !== original.availability) {
+          updateData.availability = draft.availability;
+        }
 
         await productsService.updateProduct(id, updateData);
 
-        if (Number(original.price) !== Number(draft.price)) {
+        if (draft.price !== undefined && Number(original.price) !== Number(draft.price)) {
           newLogs.push({
             id: `${id}-${now}-${Math.random().toString(36).substr(2, 4)}`,
             productId: id,
-            productName: original.name,
+            productName: draft.name || original.name,
             prevPrice: Number(original.price),
             newPrice: Number(draft.price),
             dateTime: now,
@@ -253,9 +309,9 @@ function AdminDashboardContent() {
       setProducts(freshData);
       setDrafts({});
       
-      setSuccessMessage('Price updated successfully.');
+      setSuccessMessage('Catalog updated successfully.');
       setTimeout(() => setSuccessMessage(''), 5000);
-      alert('Price updated successfully.');
+      alert('Catalog updated successfully.');
     } catch (err) {
       console.error('Failed to save changes:', err);
       alert('Failed to save changes to product catalog: ' + err.message);
@@ -268,6 +324,121 @@ function AdminDashboardContent() {
     setDrafts({});
     setSuccessMessage('Pending changes discarded.');
     setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // remove non-alphanumeric chars (excluding spaces/hyphens)
+      .replace(/[\s_-]+/g, '_') // replace spaces/underscores with single underscore
+      .replace(/^-+|-+$/g, ''); // trim starting/trailing underscores
+  };
+
+  const handleAddFormChange = (field, value) => {
+    setNewProductForm(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Auto-generate ID if name changes and user has not manually changed ID from default slug
+      if (field === 'name') {
+        const currentSlug = generateSlug(prev.name);
+        if (prev.id === '' || prev.id === currentSlug) {
+          updated.id = generateSlug(value);
+        }
+      }
+
+      // Auto-populate weightVariants based on category
+      if (field === 'category') {
+        if (value === 'Chicken' || value === 'Mutton' || value === 'Fish') {
+          updated.weightVariants = '250g, 500g, 750g, 1kg, 2kg';
+        } else if (value === 'Eggs') {
+          updated.weightVariants = '6 pieces, 12 pieces, 24 pieces, 30 pieces';
+        } else if (value === 'Add-ons') {
+          updated.weightVariants = '200ml, 500ml';
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  const handleAddProductSubmit = async (e) => {
+    e.preventDefault();
+    const { id, name, category, price, stock, image, description, weightVariants } = newProductForm;
+
+    if (!id || !name || !price) {
+      alert('Product ID, Name, and Price are required fields.');
+      return;
+    }
+
+    const variantsArray = weightVariants
+      ? weightVariants.split(',').map(s => s.trim()).filter(Boolean)
+      : ['500g'];
+
+    const newProdData = {
+      id,
+      name,
+      category,
+      basePrice: Number(price),
+      price: Number(price),
+      stock: Number(stock),
+      image: image || '/images/placeholder.png',
+      heroImage: image || '/images/placeholder.png',
+      description: description || 'Premium fresh cut.',
+      weightVariants: variantsArray,
+      availability: Number(stock) > 0 ? 'In Stock' : 'Out of Stock',
+      tags: [category.toLowerCase()],
+      origin: 'Local Farmstead',
+      freshnessScore: 99,
+      processDate: 'Today',
+      eta: 'Same-day delivery before 6 PM',
+      packaging: 'Airtight Freshness Shield'
+    };
+
+    try {
+      await productsService.addProduct(newProdData);
+      
+      const freshData = await productsService.getAllProducts();
+      setProducts(freshData);
+      
+      setShowAddModal(false);
+      setNewProductForm({
+        id: '',
+        name: '',
+        category: 'Chicken',
+        price: '',
+        stock: 50,
+        image: '',
+        description: '',
+        weightVariants: '250g, 500g, 750g, 1kg, 2kg'
+      });
+
+      setSuccessMessage(`Product '${name}' added successfully to catalog!`);
+      setTimeout(() => setSuccessMessage(''), 5000);
+      alert(`Product '${name}' has been added.`);
+    } catch (err) {
+      console.error('Failed to add product:', err);
+      alert('Failed to add product: ' + err.message);
+    }
+  };
+
+  const handleDeleteProduct = async (id, name) => {
+    const confirmed = window.confirm(`Are you sure you want to remove '${name}' from the catalog? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      await productsService.deleteProduct(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+      setDrafts(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+      alert(`Product '${name}' has been successfully deleted.`);
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+      alert('Failed to delete product: ' + err.message);
+    }
   };
 
   if (checkingAuth) {
@@ -477,7 +648,16 @@ function AdminDashboardContent() {
             <span className="text-gold-gradient">EDITOR.</span>
           </h1>
 
-          <button onClick={handleLogout} className={styles.logoutButton} id="admin-logout-btn" style={{ marginLeft: 'auto' }}>
+          <button 
+            onClick={() => setShowAddModal(true)} 
+            className={styles.btnAddProduct}
+            style={{ marginLeft: 'auto', marginRight: '16px' }}
+          >
+            <Plus size={14} style={{ marginRight: '6px' }} />
+            <span>Add New Product</span>
+          </button>
+
+          <button onClick={handleLogout} className={styles.logoutButton} id="admin-logout-btn">
             Logout
           </button>
         </div>
@@ -486,6 +666,167 @@ function AdminDashboardContent() {
           <div className={styles.successToast} id="catalog-success-message">
             <Check size={16} />
             <span>{successMessage}</span>
+          </div>
+        )}
+
+        {showAddModal && (
+          <div className={styles.modalOverlay}>
+            <GlassCard className={styles.modalContent} hoverGlow={false} expandOnHover={false}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>Add Premium Catalog Item</h3>
+                <button onClick={() => setShowAddModal(false)} className={styles.btnCloseModal}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddProductSubmit} className={styles.modalForm}>
+                <div className={styles.formRow}>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Product Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Premium Goat Ribs"
+                      className={styles.formInput}
+                      value={newProductForm.name}
+                      onChange={(e) => handleAddFormChange('name', e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Unique Slug/ID *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. premium_goat_ribs"
+                      className={styles.formInput}
+                      value={newProductForm.id}
+                      onChange={(e) => handleAddFormChange('id', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Category *</label>
+                    <select
+                      className={styles.formSelect}
+                      value={newProductForm.category}
+                      onChange={(e) => handleAddFormChange('category', e.target.value)}
+                    >
+                      <option value="Chicken">Chicken</option>
+                      <option value="Mutton">Mutton</option>
+                      <option value="Fish">Fish</option>
+                      <option value="Eggs">Eggs</option>
+                      <option value="Add-ons">Add-ons</option>
+                    </select>
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Price (₹) *</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      placeholder="e.g. 350"
+                      className={styles.formInput}
+                      value={newProductForm.price}
+                      onChange={(e) => handleAddFormChange('price', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Initial Stock Qty</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="50"
+                      className={styles.formInput}
+                      value={newProductForm.stock}
+                      onChange={(e) => handleAddFormChange('stock', e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formField} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <label className={styles.formLabel} style={{ alignSelf: 'flex-start' }}>Product Image</label>
+                    <div className={styles.modalImageWrapper}>
+                      <div className={styles.modalImageContainer}>
+                        <img
+                          src={newProductForm.image || '/images/placeholder.png'}
+                          className={styles.modalPreviewImage}
+                          alt="Product Preview"
+                          onError={(e) => { e.target.src = '/images/placeholder.png'; }}
+                        />
+                        <div className={styles.modalImageOverlay} onClick={() => document.getElementById('modal-image-upload').click()}>
+                          <Camera size={18} />
+                          <span>ADD PHOTO</span>
+                        </div>
+                      </div>
+                      {newProductForm.image && (
+                        <button
+                          type="button"
+                          className={styles.modalBtnRemovePhoto}
+                          onClick={() => handleAddFormChange('image', '')}
+                          title="Remove Photo"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                      <input
+                        type="file"
+                        id="modal-image-upload"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert("Image is too large. Please select an image under 2MB.");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (uploadEvent) => {
+                            handleAddFormChange('image', uploadEvent.target.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Weight / Quantity Variants (comma-separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 250g, 500g, 1kg"
+                    className={styles.formInput}
+                    value={newProductForm.weightVariants}
+                    onChange={(e) => handleAddFormChange('weightVariants', e.target.value)}
+                  />
+                  <small className={styles.formHelp}>Comma-separated values representing purchasable sizes.</small>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Product Description</label>
+                  <textarea
+                    placeholder="Describe the freshness, prep cuts, packaging etc."
+                    className={styles.formTextarea}
+                    rows="3"
+                    value={newProductForm.description}
+                    onChange={(e) => handleAddFormChange('description', e.target.value)}
+                  />
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button type="button" onClick={() => setShowAddModal(false)} className={styles.btnModalCancel}>
+                    Cancel
+                  </button>
+                  <button type="submit" className={styles.btnModalSubmit}>
+                    Add Product
+                  </button>
+                </div>
+              </form>
+            </GlassCard>
           </div>
         )}
 
@@ -540,71 +881,119 @@ function AdminDashboardContent() {
             <div className={styles.catalogList}>
               {products.map((product) => {
                 const draft = drafts[product.id] || {};
+                const currentName = draft.name !== undefined ? draft.name : product.name;
+                const currentImage = draft.image !== undefined ? draft.image : product.image;
                 const currentPrice = draft.price !== undefined ? draft.price : product.price;
                 const currentStock = draft.stock !== undefined ? draft.stock : product.stock;
                 const currentAvailability = draft.availability !== undefined ? draft.availability : product.availability;
                 
-                const isModified = draft.price !== undefined || draft.stock !== undefined || draft.availability !== undefined;
+                const isModified = 
+                  draft.name !== undefined || 
+                  draft.image !== undefined || 
+                  draft.price !== undefined || 
+                  draft.stock !== undefined || 
+                  draft.availability !== undefined;
 
                 return (
                   <GlassCard key={product.id} className={`${styles.catalogProductRow} ${isModified ? styles.rowModified : ''}`} hoverGlow={false} expandOnHover={false}>
-                    <div className={styles.prodInfoBlock}>
-                      <img
-                        src={product.image}
-                        className={styles.prodImage}
-                        alt={product.name}
-                        onError={(e) => { e.target.src = '/images/placeholder.png'; }}
-                      />
-                      <div className={styles.prodMeta}>
-                        <h4 className={styles.prodName}>{product.name}</h4>
+                    {/* Left Column: Image preview and badges */}
+                    <div className={styles.leftCol}>
+                      <div className={styles.prodInfoBlock}>
+                        <div className={styles.editableImageContainer}>
+                          <img
+                            src={currentImage || '/images/placeholder.png'}
+                            className={styles.prodImage}
+                            alt={currentName}
+                            onError={(e) => { e.target.src = '/images/placeholder.png'; }}
+                          />
+                          <div className={styles.imageOverlay} onClick={() => triggerImageUpload(product.id)}>
+                            <Camera size={16} />
+                            <span>CHANGE</span>
+                          </div>
+                          {currentImage && (
+                            <button
+                              type="button"
+                              className={styles.btnRemovePhoto}
+                              onClick={() => handleFieldChange(product.id, 'image', '')}
+                              title="Remove Photo"
+                            >
+                              <X size={10} />
+                            </button>
+                          )}
+                          <input
+                            type="file"
+                            id={`image-upload-${product.id}`}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleImageUpload(product.id, e)}
+                          />
+                        </div>
                         <div className={styles.prodBadges}>
                           <span className={styles.categoryBadge}>{product.category}</span>
-                          <span className={styles.variantBadge}>
-                            {product.weightVariants ? product.weightVariants.join(', ') : 'N/A'}
-                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.originalInfoCol}>
+                        <span className={styles.labelMuted}>Original DB Record</span>
+                        <div className={styles.originalStats}>
+                          <span className={styles.statTruncate} title={product.name}>Name: {product.name}</span>
+                          <span className={styles.statTruncate} title={product.image}>Image: {product.image}</span>
+                          <span>Price: ₹{product.price}</span>
+                          <span>Stock: {product.stock} | {product.availability}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className={styles.originalInfoCol}>
-                      <span className={styles.labelMuted}>Database Reference</span>
-                      <div className={styles.originalStats}>
-                        <span>Price: ₹{product.price.toLocaleString('en-IN')}</span>
-                        <span>Stock: {product.stock}</span>
-                        <span>Status: {product.availability}</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.editorControlsCol}>
-                      <div className={styles.editorField}>
-                        <label className={styles.fieldLabel}>Price (₹)</label>
+                    {/* Right Column: Editable form inputs */}
+                    <div className={styles.rightCol}>
+                      <div className={styles.editorFieldFull}>
+                        <label className={styles.fieldLabel}>Product Name</label>
                         <input
-                          type="number"
+                          type="text"
                           className={styles.editorInputField}
-                          value={currentPrice}
-                          min="0"
-                          onChange={(e) => handleFieldChange(product.id, 'price', e.target.value === '' ? '' : Number(e.target.value))}
+                          value={currentName}
+                          onChange={(e) => handleFieldChange(product.id, 'name', e.target.value)}
                         />
                       </div>
 
-                      <div className={styles.editorField}>
-                        <label className={styles.fieldLabel}>Stock Qty</label>
-                        <input
-                          type="number"
-                          className={styles.editorInputField}
-                          value={currentStock}
-                          min="0"
-                          onChange={(e) => handleFieldChange(product.id, 'stock', e.target.value === '' ? '' : Number(e.target.value))}
-                        />
-                      </div>
+                      <div className={styles.editorFieldsRow}>
+                        <div className={styles.editorField}>
+                          <label className={styles.fieldLabel}>Price (₹)</label>
+                          <input
+                            type="number"
+                            className={styles.editorInputField}
+                            value={currentPrice}
+                            min="0"
+                            onChange={(e) => handleFieldChange(product.id, 'price', e.target.value === '' ? '' : Number(e.target.value))}
+                          />
+                        </div>
 
-                      <div className={styles.editorField}>
-                        <label className={styles.fieldLabel}>Stock Status</label>
+                        <div className={styles.editorField}>
+                          <label className={styles.fieldLabel}>Stock Qty</label>
+                          <input
+                            type="number"
+                            className={styles.editorInputField}
+                            value={currentStock}
+                            min="0"
+                            onChange={(e) => handleFieldChange(product.id, 'stock', e.target.value === '' ? '' : Number(e.target.value))}
+                          />
+                        </div>
+
+                        <div className={styles.editorField}>
+                          <label className={styles.fieldLabel}>Stock Status</label>
+                          <button
+                            onClick={() => handleFieldChange(product.id, 'availability', currentAvailability === 'In Stock' ? 'Out of Stock' : 'In Stock')}
+                            className={`${styles.toggleBtn} ${currentAvailability === 'In Stock' ? styles.toggleInStock : styles.toggleOutOfStock}`}
+                          >
+                            {currentAvailability === 'In Stock' ? 'In Stock' : 'Out of Stock'}
+                          </button>
+                        </div>
+
                         <button
-                          onClick={() => handleFieldChange(product.id, 'availability', currentAvailability === 'In Stock' ? 'Out of Stock' : 'In Stock')}
-                          className={`${styles.toggleBtn} ${currentAvailability === 'In Stock' ? styles.toggleInStock : styles.toggleOutOfStock}`}
+                          onClick={() => handleDeleteProduct(product.id, product.name)}
+                          className={styles.btnRowDelete}
+                          title="Remove Product"
                         >
-                          {currentAvailability === 'In Stock' ? 'In Stock' : 'Out of Stock'}
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>

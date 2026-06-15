@@ -1,120 +1,47 @@
-import { supabase } from '../lib/supabase';
 import { poultryProducts } from '../data/poultryProducts';
 
-const fallbackUniverseProducts = [
-  { 
-    id: 'norwegian_salmon_fillet',
-    name: 'Norwegian Salmon Fillet', 
-    category: 'Seafood', 
-    price: 4300, 
-    image: '/images/ocean_selection.png',
-    description: 'Fresh Norwegian salmon fillet, rich in Omega-3, ideal for pan-searing or baking.',
-    stock: 25,
-    tags: ['Fresh', 'Seafood'],
-    weight_variants: ['500g', '1kg'],
-    origin: 'Norway',
-    freshness_score: 99,
-    process_date: 'Today',
-    delivery_eta: 'Same Day'
-  },
-  { 
-    id: 'wagyu_lamb_rack',
-    name: 'Wagyu-Style Lamb Rack', 
-    category: 'Meat', 
-    price: 7400, 
-    image: '/images/butchers_reserve.png',
-    description: 'Exceptionally tender, grass-fed Wagyu-style lamb rack sourced from New Zealand.',
-    stock: 12,
-    tags: ['Gourmet Cuts', 'Meat'],
-    weight_variants: ['750g', '1.5kg'],
-    origin: 'New Zealand',
-    freshness_score: 97,
-    process_date: 'Today',
-    delivery_eta: 'Next Day'
-  },
-  { 
-    id: 'king_prawns_xl',
-    name: 'King Prawns XL', 
-    category: 'Seafood', 
-    price: 3500, 
-    image: '/images/ocean_selection.png',
-    description: 'Extra-large prawns harvested from the Arabian Gulf. Sweet, firm, and juicy.',
-    stock: 40,
-    tags: ['Fresh', 'Seafood'],
-    weight_variants: ['500g', '1kg'],
-    origin: 'Arabian Gulf',
-    freshness_score: 98,
-    process_date: 'Today',
-    delivery_eta: 'Same Day'
-  },
-  { 
-    id: 'organic_chicken_breast_universe',
-    name: 'Organic Chicken Breast', 
-    category: 'Poultry', 
-    price: 2000, 
-    image: '/images/poultry/premium-boneless-chicken-breast-fillet.png',
-    description: 'All-natural, hormone-free chicken breast portions. Lean protein-rich cuts.',
-    stock: 50,
-    tags: ['Boneless', 'Poultry'],
-    weight_variants: ['500g', '1kg'],
-    origin: 'Local Farms',
-    freshness_score: 99,
-    process_date: 'Today',
-    delivery_eta: 'Same Day'
-  },
-  { 
-    id: 'ribeye_steak_premium',
-    name: 'Ribeye Steak Premium', 
-    category: 'Meat', 
-    price: 5650, 
-    image: '/images/butchers_reserve.png',
-    description: 'Premium Australian ribeye cut with exquisite marbling for intense, buttery flavor.',
-    stock: 15,
-    tags: ['Gourmet Cuts', 'Meat'],
-    weight_variants: ['400g', '800g'],
-    origin: 'Australia',
-    freshness_score: 96,
-    process_date: 'Yesterday',
-    delivery_eta: 'Next Day'
-  },
-  { 
-    id: 'wild_sea_bass',
-    name: 'Wild Sea Bass', 
-    category: 'Seafood', 
-    price: 3800, 
-    image: '/images/ocean_selection.png',
-    description: 'Line-caught wild sea bass from the clean Mediterranean waters. Flaky, light meat.',
-    stock: 20,
-    tags: ['Fresh', 'Seafood'],
-    weight_variants: ['600g', '1.2kg'],
-    origin: 'Mediterranean',
-    freshness_score: 98,
-    process_date: 'Today',
-    delivery_eta: 'Same Day'
-  }
-];
+const LOCAL_STORAGE_KEY = 'al_quraish_catalog_v1';
 
-// Helper to format raw db rows to frontend UI schema
+const getStoredProducts = () => {
+  if (typeof window === 'undefined') return poultryProducts;
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!stored) {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(poultryProducts));
+    return poultryProducts;
+  }
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error('Failed to parse stored products', e);
+    return poultryProducts;
+  }
+};
+
+const saveStoredProducts = (products) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+};
+
 const mapDbProductToFrontend = (prod) => ({
   id: prod.id,
   name: prod.name,
   category: prod.category,
-  heroImage: prod.image,
-  image: prod.image,
+  heroImage: prod.heroImage || prod.image,
+  image: prod.heroImage || prod.image,
   description: prod.description || '',
-  basePrice: Number(prod.price),
-  price: Number(prod.price),
-  stock: prod.stock,
+  basePrice: Number(prod.basePrice),
+  price: Number(prod.basePrice),
+  stock: prod.stock || 50,
   tags: prod.tags || [],
-  weightVariants: prod.weight_variants || ['500g', '1kg'],
-  origin: prod.origin || 'Imported Sourcing',
-  freshnessScore: prod.freshness_score || 98,
-  processDate: prod.process_date || 'Today',
-  delivery: prod.delivery_eta || 'Same Day',
-  eta: prod.delivery_eta || 'Same Day',
-  packaging: prod.packaging || 'Gold-Embossed Thermal Vacuum Shield',
+  weightVariants: prod.weightVariants || ['250g', '500g', '750g', '1kg', '2kg'],
+  origin: prod.origin || 'Local Farmstead',
+  freshnessScore: prod.freshnessScore || 99,
+  processDate: prod.processDate || 'Today',
+  delivery: prod.eta || 'Same-day delivery before 6 PM',
+  eta: prod.eta || 'Same-day delivery before 6 PM',
+  packaging: prod.packaging || 'Airtight Freshness Shield',
   availability: prod.availability || 'In Stock',
-  nutrition: prod.nutritional_info || { protein: '0g', fat: '0g', energy: '0 kcal', carbs: '0g' },
+  nutrition: prod.nutrition || { protein: '0g', fat: '0g', energy: '0 kcal', carbs: '0g' },
   preparation: prod.preparation || '',
   gallery: prod.gallery || []
 });
@@ -122,104 +49,60 @@ const mapDbProductToFrontend = (prod) => ({
 export const productsService = {
   // Fetch all products
   getAllProducts: async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('category');
-
-      if (error || !data || data.length === 0) {
-        // Fallback to static lists
-        return [
-          ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-          ...fallbackUniverseProducts
-        ];
-      }
-      return data.map(mapDbProductToFrontend);
-    } catch (e) {
-      console.warn('Supabase products fetch failed, using fallbacks.', e);
-      return [
-        ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-        ...fallbackUniverseProducts
-      ];
-    }
+    return getStoredProducts().map(mapDbProductToFrontend);
   },
 
   // Get products by category
   getProductsByCategory: async (category) => {
-    try {
-      let query = supabase.from('products').select('*');
-      if (category.toLowerCase() === 'poultry') {
-        query = query.in('category', ['Chicken', 'Duck', 'Turkey', 'Poultry']);
-      } else {
-        query = query.eq('category', category);
-      }
-      const { data, error } = await query.order('name');
-
-      if (error || !data || data.length === 0) {
-        // Fallback filtering
-        const all = [
-          ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-          ...fallbackUniverseProducts
-        ];
-        if (category.toLowerCase() === 'poultry') {
-          return all.filter(p => ['chicken', 'duck', 'turkey', 'poultry'].includes(p.category.toLowerCase()));
-        }
-        return all.filter(p => p.category.toLowerCase() === category.toLowerCase());
-      }
-      return data.map(mapDbProductToFrontend);
-    } catch (e) {
-      const all = [
-        ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-        ...fallbackUniverseProducts
-      ];
-      if (category.toLowerCase() === 'poultry') {
-        return all.filter(p => ['chicken', 'duck', 'turkey', 'poultry'].includes(p.category.toLowerCase()));
-      }
-      return all.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    const all = getStoredProducts().map(mapDbProductToFrontend);
+    if (!category || category.toLowerCase() === 'all') {
+      return all;
     }
+    return all.filter(p => p.category.toLowerCase() === category.toLowerCase());
   },
 
   // Get product by ID
   getProductById: async (id) => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error || !data) {
-        const all = [
-          ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-          ...fallbackUniverseProducts
-        ];
-        return all.find(p => p.id === id) || null;
-      }
-      return mapDbProductToFrontend(data);
-    } catch (e) {
-      const all = [
-        ...poultryProducts.map(p => ({ ...p, price: p.basePrice })),
-        ...fallbackUniverseProducts
-      ];
-      return all.find(p => p.id === id) || null;
-    }
+    const all = getStoredProducts().map(mapDbProductToFrontend);
+    return all.find(p => p.id === id) || null;
   },
 
   // Update product record
   updateProduct: async (id, updateData) => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .update(updateData)
-        .eq('id', id)
-        .select();
-
-      if (error) throw error;
-      return data && data.length > 0 ? mapDbProductToFrontend(data[0]) : null;
-    } catch (e) {
-      console.error(`Failed to update product ${id}:`, e);
-      throw e;
+    const prods = getStoredProducts();
+    const idx = prods.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      // Sync basePrice and price fields if either is changed
+      const priceVal = updateData.price !== undefined ? updateData.price : updateData.basePrice;
+      const merged = { ...prods[idx], ...updateData };
+      if (priceVal !== undefined) {
+        merged.basePrice = Number(priceVal);
+        merged.price = Number(priceVal);
+      }
+      prods[idx] = merged;
+      saveStoredProducts(prods);
+      return mapDbProductToFrontend(prods[idx]);
     }
+    return null;
+  },
+
+  // Add new product
+  addProduct: async (newProduct) => {
+    const prods = getStoredProducts();
+    const exists = prods.some(p => p.id === newProduct.id);
+    if (exists) {
+      throw new Error(`A product with ID '${newProduct.id}' already exists.`);
+    }
+    prods.push(newProduct);
+    saveStoredProducts(prods);
+    return mapDbProductToFrontend(newProduct);
+  },
+
+  // Delete product
+  deleteProduct: async (id) => {
+    const prods = getStoredProducts();
+    const filtered = prods.filter(p => p.id !== id);
+    saveStoredProducts(filtered);
+    return true;
   }
 };

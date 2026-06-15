@@ -1,102 +1,113 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Clock, ShieldCheck, Leaf, Star, ArrowRight } from 'lucide-react';
 import ParticleField from '../components/ParticleField';
 import styles from './HeroSection.module.css';
 
 export default function HeroSection() {
-  const heroRef = useRef(null);
-  const headlineRef = useRef(null);
-
-  useEffect(() => {
-    const words = headlineRef.current?.querySelectorAll(`.${styles.word}`);
-    if (words) {
-      words.forEach((word, i) => {
-        word.style.animationDelay = `${0.3 + i * 0.15}s`;
-      });
-    }
-  }, []);
-
   return (
-    <section ref={heroRef} className={styles.hero} id="hero">
-      {/* Volumetric background */}
+    <section className={styles.hero} id="hero">
+      {/* Ambient backgrounds for luxury feel */}
       <div className={styles.bgLayers}>
-        <div className={styles.oceanDarkness} />
-        <div className={styles.lightRay1} />
-        <div className={styles.lightRay2} />
-        <div className={styles.lightRay3} />
         <div className={styles.ambientGlow1} />
         <div className={styles.ambientGlow2} />
-        <div className={styles.fogLayer} />
       </div>
 
       {/* Particles */}
       <ParticleField
-        particleCount={50}
-        color="rgba(201, 169, 110, 0.35)"
-        speed={0.2}
+        particleCount={40}
+        color="rgba(212, 175, 55, 0.2)"
+        speed={0.15}
         maxSize={2}
       />
 
-      {/* Content */}
-      <div className={styles.content}>
-        <div className={styles.labelContainer}>
-          <span className={styles.label}>Premium Halal Excellence</span>
+      <div className={styles.container}>
+        {/* Left Column: Content */}
+        <div className={styles.contentCol}>
+          <div className={styles.badge}>
+            <span className={styles.badgeDot} />
+            <span>100% Halal • Hand-cut daily</span>
+          </div>
+
+          <h1 className={styles.headline}>
+            The freshest meat, <br />
+            <span className={styles.highlightText}>delivered to your door.</span>
+          </h1>
+
+          <p className={styles.subheadline}>
+            Premium chicken, mutton, fish and farm-fresh eggs sourced with integrity and delivered fresh daily to your kitchen in Ramanagara.
+          </p>
+
+          <div className={styles.actions}>
+            <Link href="/premium-poultry" className={styles.btnGold}>
+              <span>Shop fresh now</span>
+              <ArrowRight size={16} />
+            </Link>
+            <Link href="/premium-poultry" className={styles.btnOutline}>
+              <span>Browse categories</span>
+            </Link>
+          </div>
+
+          <div className={styles.trustIndicators}>
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <Clock size={16} />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>90-Min Delivery</span>
+                <span className={styles.trustDesc}>Superfast shipping</span>
+              </div>
+            </div>
+            <div className={styles.trustDivider} />
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <ShieldCheck size={16} />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>FSSAI Certified</span>
+                <span className={styles.trustDesc}>Safe & hygienic</span>
+              </div>
+            </div>
+            <div className={styles.trustDivider} />
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <Leaf size={16} />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>Antibiotic-Free</span>
+                <span className={styles.trustDesc}>100% natural feed</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h1 ref={headlineRef} className={styles.headline}>
-          <span className={styles.word}>CRAFTED</span>
-          <span className={styles.word}>FOR</span>
-          <br />
-          <span className={styles.word}>THE</span>
-          <span className={styles.word}>FINEST</span>
-          <br />
-          <span className={`${styles.word} ${styles.goldWord}`}>TABLES.</span>
-        </h1>
-
-        <p className={styles.subheadline}>
-          Premium halal meats, seafood, poultry and chef-selected cuts{' '}
-          <br className={styles.brDesktop} />
-          sourced with integrity and delivered with precision.
-        </p>
-
-        <div className={styles.actions}>
-          <a href="#collection" className={styles.btnPrimary}>
-            <span>Explore Collection</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-          <button className={styles.btnGlass}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="5,3 19,12 5,21" />
-            </svg>
-            <span>Watch Our Journey</span>
-          </button>
-        </div>
-
-        <div className={styles.indicators}>
-          <div className={styles.indicator}>
-            <span className={styles.indicatorDot} />
-            <span>100% Halal Certified</span>
-          </div>
-          <div className={styles.indicatorSep} />
-          <div className={styles.indicator}>
-            <span className={styles.indicatorDot} style={{ background: 'var(--cyan)' }} />
-            <span>Cold Chain Protected</span>
-          </div>
-          <div className={styles.indicatorSep} />
-          <div className={styles.indicator}>
-            <span className={styles.indicatorDot} style={{ background: 'var(--emerald)' }} />
-            <span>Delivered Fresh Daily</span>
+        {/* Right Column: Visual Presentation */}
+        <div className={styles.visualCol}>
+          <div className={styles.imageCardContainer}>
+            <div className={styles.imageWrapper}>
+              <img 
+                src="/images/fresh_meats_hero.png" 
+                alt="Al Quresh Premium Fresh Meats" 
+                className={styles.heroImage}
+              />
+            </div>
+            
+            {/* Overlay Rating Card */}
+            <div className={styles.ratingCard}>
+              <div className={styles.starsRow}>
+                <Star size={14} fill="#d4af37" color="#d4af37" />
+                <Star size={14} fill="#d4af37" color="#d4af37" />
+                <Star size={14} fill="#d4af37" color="#d4af37" />
+                <Star size={14} fill="#d4af37" color="#d4af37" />
+                <Star size={14} fill="#d4af37" color="#d4af37" />
+              </div>
+              <span className={styles.ratingStats}>4.9 from 2,400+ orders</span>
+              <span className={styles.ratingLabel}>Rated by Ramanagara families</span>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className={styles.scrollIndicator}>
-        <div className={styles.scrollLine} />
-        <span className={styles.scrollText}>Scroll to explore</span>
       </div>
     </section>
   );

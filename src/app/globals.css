@@ -8,22 +8,28 @@
 
 /* ── CSS Custom Properties ────────────────────────────────────── */
 :root {
-  /* Blacks & Darks - Luxury Forest Resort Theme */
-  --black-pure:       #041A14; /* Deep forest shadow base */
-  --black-deep:       #0A2A20; /* Dark forest green */
-  --black-rich:       #0E3B2D; /* Emerald forest dark */
-  --black-elevated:   #164B3A; /* Warm forest light accent */
-  --black-surface:    #0a201a;
-  --black-card:       rgba(10, 42, 32, 0.45); /* Frosted forest glass base */
-  --black-border:     rgba(201, 169, 110, 0.12); /* Subtle gold tint for Quraish branding */
-  --black-hover:      rgba(22, 75, 58, 0.6);
+  /* Blacks & Darks - Luxury Forest Resort Theme (Light Mode Conversion) */
+  --black-pure: #ffffff;
+  /* Clean white base background */
+  --black-deep: #fafaf6;
+  /* Warm off-white category base */
+  --black-rich: #f5f5f0;
+  /* Soft light grey/green */
+  --black-elevated: #eaeae6;
+  /* Warm light grey border */
+  --black-surface: #ffffff;
+  --black-card: rgba(10, 42, 32, 0.95);
+  /* Signature premium dark green card background */
+  --black-border: rgba(212, 175, 55, 0.2);
+  /* Refined gold border */
+  --black-hover: rgba(10, 42, 32, 0.85);
 
   /* Gold Spectrum */
   --gold-dark: #8b6914;
   --gold: #c9a96e;
   --gold-bright: #d4af37;
-  --gold-light: #e8d5a3;
-  --gold-shimmer: #f5e6c8;
+  --gold-light: #b8985c;
+  --gold-shimmer: #dfa93b;
 
   /* Emerald */
   --emerald-dark: #1b4332;
@@ -49,11 +55,11 @@
   --copper-light: #cd7f32;
   --copper-glow: #daa06d;
 
-  /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #777777;
-  --text-muted: #555555;
+  /* Text (Light theme dark green/grey values) */
+  --text-primary: #062a1c;
+  --text-secondary: #2d4036;
+  --text-tertiary: #556b60;
+  --text-muted: #788e81;
 
   /* Glass */
   --glass-bg: rgba(255, 255, 255, 0.03);

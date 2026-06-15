@@ -1,0 +1,48 @@
+# Antigravity IDE Ignore Rules
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# Vite cache
+.vite/
+
+# Environment files
+.env
+.env.local
+
+# Git
+.git/
+
+# Logs
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+
+# Temp files
+tmp/
+temp/
+
+# Coverage
+coverage/
+
+# Binary files
+*.o
+*.so
+*.dll
+
+# Database files
+*.sqlite
+*.sqlite3
+
+# Python environments
+venv/
+.venv/
+env/

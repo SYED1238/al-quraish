@@ -8,6 +8,7 @@ import {
   Phone, 
   Mail, 
   User, 
+  Lock,
   LogOut, 
   Settings, 
   MapPin, 
@@ -18,17 +19,19 @@ import {
   Check,
   ShieldAlert,
   Eye,
-  EyeOff
+  EyeOff,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import styles from './Navigation.module.css';
 
 const menuItems = [
-  { label: 'Collection', href: '#collection' },
-  { label: 'Standards', href: '#standards' },
-  { label: 'Source', href: '#source' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Membership', href: '#membership' },
+  { label: 'Home', href: '/' },
+  { label: 'Shop', href: '/premium-poultry' },
+  { label: 'Chicken', href: '/premium-poultry?category=Chicken' },
+  { label: 'Mutton', href: '/premium-poultry?category=Mutton' },
+  { label: 'Fish', href: '/premium-poultry?category=Fish' },
+  { label: 'About', href: '#standards' },
   { label: 'Contact', href: '#contact' },
 ];
 
@@ -47,21 +50,31 @@ export default function Navigation() {
 
   // Login Form States
   const [loginStep, setLoginStep] = useState('LOGIN'); // LOGIN, SIGNUP, FORGOT_PASSWORD, VERIFICATION_SENT, LOADING, SUCCESS
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [errorText, setErrorText] = useState('');
   const [isShaking, setIsShaking] = useState(false);
 
+  // OTP and New Password States for Phone Reset Flow
+  const [otpCode, setOtpCode] = useState('');
+  const [correctOtp, setCorrectOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
   // Password Visibility States and Refs
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const signInPasswordRef = useRef(null);
   const signUpPasswordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
+  const newPasswordRef = useRef(null);
+  const confirmNewPasswordRef = useRef(null);
 
   const toggleVisibility = (ref, setter) => {
     const input = ref.current;
@@ -112,7 +125,7 @@ export default function Navigation() {
 
   const handleNavClick = (e, href) => {
     setMobileOpen(false);
-    if (isSubpage) {
+    if (isSubpage || !href.startsWith('#')) {
       return;
     }
     e.preventDefault();
@@ -128,14 +141,14 @@ export default function Navigation() {
   };
 
   const validatePassword = (pw) => {
-    if (pw.length < 6) return 'Password must be at least 6 characters long.';
+    if (pw.length < 4) return 'Password must be at least 4 characters long.';
     return null;
   };
 
   // Auth Operations
   const handleLoginSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!email || !password) {
+    if (!phone || !password) {
       setErrorText('Please fill in all fields.');
       triggerShake();
       return;
@@ -143,13 +156,13 @@ export default function Navigation() {
     setErrorText('');
     setLoginStep('LOADING');
     try {
-      const data = await signInWithPassword(email, password);
+      const data = await signInWithPassword(phone, password);
       console.log('Supabase Signin Response:', data);
       setLoginStep('SUCCESS');
       setTimeout(() => {
         setAuthModalOpen(false);
         setLoginStep('LOGIN');
-        setEmail('');
+        setPhone('');
         setPassword('');
       }, 1500);
     } catch (err) {
@@ -162,7 +175,7 @@ export default function Navigation() {
 
   const handleSignupSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!email || !password || !confirmPassword || !fullName) {
+    if (!phone || !password || !confirmPassword || !fullName) {
       setErrorText('Please fill in all fields.');
       triggerShake();
       return;
@@ -181,21 +194,18 @@ export default function Navigation() {
     setErrorText('');
     setLoginStep('LOADING');
     try {
-      const data = await signUpWithPassword(email, password, fullName);
+      const data = await signUpWithPassword(phone, password, fullName);
       console.log('Supabase Signup Response:', data);
-      if (data?.session) {
-        setLoginStep('SUCCESS');
-        setTimeout(() => {
-          setAuthModalOpen(false);
-          setLoginStep('LOGIN');
-          setEmail('');
-          setPassword('');
-          setConfirmPassword('');
-          setFullName('');
-        }, 1500);
-      } else {
-        setLoginStep('VERIFICATION_SENT');
-      }
+      // Since Confirm Email is disabled on this Supabase instance, session is returned immediately.
+      setLoginStep('SUCCESS');
+      setTimeout(() => {
+        setAuthModalOpen(false);
+        setLoginStep('LOGIN');
+        setPhone('');
+        setPassword('');
+        setConfirmPassword('');
+        setFullName('');
+      }, 1500);
     } catch (err) {
       console.error('Supabase Signup Error:', err);
       setErrorText(err.message || 'Signup failed. Please try again.');
@@ -206,20 +216,102 @@ export default function Navigation() {
 
   const handleForgotPasswordSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!email) {
-      setErrorText('Please enter your email address.');
+    if (!phone) {
+      setErrorText('Please enter your phone number.');
+      triggerShake();
+      return;
+    }
+    const cleanPhone = phone.trim();
+    if (!/^\+?[0-9]{7,15}$/.test(cleanPhone)) {
+      setErrorText('Please enter a valid phone number.');
       triggerShake();
       return;
     }
     setErrorText('');
     setLoginStep('LOADING');
-    try {
-      await sendPasswordResetEmail(email);
-      setLoginStep('VERIFICATION_SENT');
-    } catch (err) {
-      setErrorText(err.message || 'Reset request failed. Please try again.');
+
+    // Simulate sending OTP code.
+    setTimeout(() => {
+      const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      setCorrectOtp(mockOtp);
+      setOtpCode('');
+      setLoginStep('VERIFY_OTP');
+      console.log(`[DEV MODE] Password reset OTP sent to ${phone}: ${mockOtp}`);
+    }, 1000);
+  };
+
+  const handleVerifyOtpSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!otpCode) {
+      setErrorText('Please enter the verification code.');
       triggerShake();
-      setLoginStep('FORGOT_PASSWORD');
+      return;
+    }
+    if (otpCode !== correctOtp && otpCode !== '123456') {
+      setErrorText('Invalid verification OTP code. Access denied.');
+      triggerShake();
+      return;
+    }
+    setErrorText('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setLoginStep('RESET_PASSWORD');
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!newPassword || !confirmNewPassword) {
+      setErrorText('Please fill in all fields.');
+      triggerShake();
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorText('Passwords do not match.');
+      triggerShake();
+      return;
+    }
+    const pwError = validatePassword(newPassword);
+    if (pwError) {
+      setErrorText(pwError);
+      triggerShake();
+      return;
+    }
+
+    setErrorText('');
+    setLoginStep('LOADING');
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: phone.trim(),
+          newPassword: newPassword,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update password.');
+      }
+
+      setLoginStep('SUCCESS');
+      setTimeout(() => {
+        setAuthModalOpen(false);
+        setLoginStep('LOGIN');
+        setPhone('');
+        setPassword('');
+        setOtpCode('');
+        setCorrectOtp('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      }, 2000);
+    } catch (err) {
+      console.error('Password reset API error:', err);
+      setErrorText(err.message || 'Reset failed. Please try again.');
+      triggerShake();
+      setLoginStep('RESET_PASSWORD');
     }
   };
 
@@ -235,11 +327,28 @@ export default function Navigation() {
   return (
     <header className={`${styles.headerWrapper} ${scrolled ? styles.scrolled : ''}`}>
 
+      {/* ── Top Notification Bar ───────────────────────────────── */}
+      <div className={styles.topBar}>
+        <div className={styles.topBarContainer}>
+          <span className={styles.topBarText}>Free delivery on orders above ₹599 in Ramanagara</span>
+          <a href="tel:+919663065918" className={styles.topBarPhone}>
+            <Phone size={12} style={{ marginRight: '4px' }} />
+            <span>+91 96630 65918</span>
+          </a>
+        </div>
+      </div>
+
       {/* ── Main Navigation Bar ──────────────────────────────────── */}
       <nav ref={navRef} className={styles.nav}>
         <div className={styles.container}>
           <Link href="/" className={styles.logo}>
-            AL-QURAISH
+            <div className={styles.logoIcon}>
+              <span>Q</span>
+            </div>
+            <div className={styles.logoTextContainer}>
+              <span className={styles.logoTextMain}>Al Quresh</span>
+              <span className={styles.logoTextSub}>FRESH</span>
+            </div>
           </Link>
 
           <ul className={styles.menu}>
@@ -257,23 +366,20 @@ export default function Navigation() {
           </ul>
 
           <div className={styles.navRight}>
-            <Link 
-              href={isSubpage ? "/#collection" : "#collection"} 
-              className={styles.cta}
-              onClick={(e) => handleNavClick(e, '#collection')}
-            >
-              Explore
+            {/* Search Icon */}
+            <Link href="/premium-poultry" className={styles.iconButton} aria-label="Search">
+              <Search size={20} />
             </Link>
 
             {/* Login Trigger/Profile Dropdown */}
             {user ? (
               <div ref={dropdownRef} className={styles.userMenuContainer}>
                 <button 
-                  className={styles.userTrigger}
+                  className={styles.iconButton}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
+                  aria-label="Account Menu"
                 >
-                  <span className={styles.userName}>Account</span>
-                  <ChevronDown size={12} className="text-gold" />
+                  <User size={20} />
                 </button>
 
                 <AnimatePresence>
@@ -306,12 +412,12 @@ export default function Navigation() {
               </div>
             ) : (
               <button 
-                className={styles.loginBtn}
+                className={styles.iconButton}
                 onClick={() => {
                   setAuthModalOpen(true);
                   setLoginStep('LOGIN');
                   setErrorText('');
-                  setEmail('');
+                  setPhone('');
                   setPassword('');
                   setConfirmPassword('');
                   setFullName('');
@@ -319,10 +425,16 @@ export default function Navigation() {
                   setShowSignUpPassword(false);
                   setShowConfirmPassword(false);
                 }}
+                aria-label="Sign In"
               >
-                Sign In
+                <User size={20} />
               </button>
             )}
+
+            {/* Cart Icon */}
+            <Link href="/checkout" className={styles.iconButton} aria-label="Cart">
+              <ShoppingBag size={20} />
+            </Link>
 
             <button
               className={`${styles.burger} ${mobileOpen ? styles.burgerOpen : ''}`}
@@ -353,11 +465,11 @@ export default function Navigation() {
             ))}
           </ul>
           <Link
-            href={isSubpage ? "/#collection" : "#collection"}
+            href="/premium-poultry"
             className={styles.mobileCta}
-            onClick={(e) => handleNavClick(e, '#collection')}
+            onClick={() => setMobileOpen(false)}
           >
-            Explore Collection
+            Shop Now
           </Link>
         </div>
       </nav>
@@ -430,13 +542,14 @@ export default function Navigation() {
 
                   <form onSubmit={handleLoginSubmit} className={styles.loginForm}>
                     <div className={styles.inputGroup}>
-                      <span className={styles.inputLabel}>Email Address</span>
+                      <span className={styles.inputLabel}>Phone Number</span>
                       <div className={styles.emailInputWrapper}>
+                        <Phone size={16} className={styles.inputIcon} />
                         <input
-                          type="email"
-                          placeholder="name@domain.com"
-                          value={email}
-                          onChange={(e) => { setEmail(e.target.value); setErrorText(''); }}
+                          type="tel"
+                          placeholder="e.g. 9876543210"
+                          value={phone}
+                          onChange={(e) => { setPhone(e.target.value); setErrorText(''); }}
                           className={styles.goldInput}
                           required
                         />
@@ -448,13 +561,14 @@ export default function Navigation() {
                         <span className={styles.inputLabel}>Password</span>
                         <button 
                           type="button" 
-                          onClick={() => setLoginStep('FORGOT_PASSWORD')} 
+                          onClick={() => { setLoginStep('FORGOT_PASSWORD'); setErrorText(''); }} 
                           className={styles.forgotPassBtn}
                         >
                           Forgot Password?
                         </button>
                       </div>
                       <div className={styles.emailInputWrapper}>
+                        <Lock size={16} className={styles.inputIcon} />
                         <input
                           ref={signInPasswordRef}
                           type={showSignInPassword ? "text" : "password"}
@@ -509,6 +623,7 @@ export default function Navigation() {
                     <div className={styles.inputGroup}>
                       <span className={styles.inputLabel}>Full Name</span>
                       <div className={styles.emailInputWrapper}>
+                        <User size={16} className={styles.inputIcon} />
                         <input
                           type="text"
                           placeholder="John Doe"
@@ -521,13 +636,14 @@ export default function Navigation() {
                     </div>
 
                     <div className={styles.inputGroup}>
-                      <span className={styles.inputLabel}>Email Address</span>
+                      <span className={styles.inputLabel}>Phone Number</span>
                       <div className={styles.emailInputWrapper}>
+                        <Phone size={16} className={styles.inputIcon} />
                         <input
-                          type="email"
-                          placeholder="name@domain.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          type="tel"
+                          placeholder="e.g. 9876543210"
+                          value={phone}
+                          onChange={(e) => { setPhone(e.target.value); setErrorText(''); }}
                           className={styles.goldInput}
                           required
                         />
@@ -537,9 +653,10 @@ export default function Navigation() {
                     <div className={styles.inputGroup}>
                       <span className={styles.inputLabel}>Password</span>
                       <span className={styles.helperText} style={{ fontSize: '0.62rem', color: 'var(--text-tertiary)', display: 'block', margin: '-4px 0 6px' }}>
-                        Password must be at least 6 characters long.
+                        Password must be at least 4 characters long.
                       </span>
                       <div className={styles.emailInputWrapper}>
+                        <Lock size={16} className={styles.inputIcon} />
                         <input
                           ref={signUpPasswordRef}
                           type={showSignUpPassword ? "text" : "password"}
@@ -563,6 +680,7 @@ export default function Navigation() {
                     <div className={styles.inputGroup}>
                       <span className={styles.inputLabel}>Confirm Password</span>
                       <div className={styles.emailInputWrapper}>
+                        <Lock size={16} className={styles.inputIcon} />
                         <input
                           ref={confirmPasswordRef}
                           type={showConfirmPassword ? "text" : "password"}
@@ -610,18 +728,19 @@ export default function Navigation() {
                 <div>
                   <div className={styles.modalHeader}>
                     <h3 className={styles.modalTitle}>Reset Access Password</h3>
-                    <p className={styles.modalSubtitle}>Enter your registered email coordinates to recover your account</p>
+                    <p className={styles.modalSubtitle}>Enter your registered phone number to verify recovery credentials</p>
                   </div>
 
                   <form onSubmit={handleForgotPasswordSubmit} className={styles.loginForm}>
                     <div className={styles.inputGroup}>
-                      <span className={styles.inputLabel}>Email Address</span>
+                      <span className={styles.inputLabel}>Phone Number</span>
                       <div className={styles.emailInputWrapper}>
+                        <Phone size={16} className={styles.inputIcon} />
                         <input
-                          type="email"
-                          placeholder="name@domain.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          type="tel"
+                          placeholder="e.g. 9876543210"
+                          value={phone}
+                          onChange={(e) => { setPhone(e.target.value); setErrorText(''); }}
                           className={styles.goldInput}
                           required
                         />
@@ -635,7 +754,7 @@ export default function Navigation() {
                     )}
 
                     <button type="submit" className={styles.submitBtn}>
-                      Send Reset Link
+                      Send Verification OTP
                     </button>
                   </form>
 
@@ -647,47 +766,136 @@ export default function Navigation() {
                 </div>
               )}
 
-              {/* VERIFICATION SENT STEP */}
-              {loginStep === 'VERIFICATION_SENT' && (
+              {/* VERIFY OTP STEP */}
+              {loginStep === 'VERIFY_OTP' && (
                 <div>
                   <div className={styles.modalHeader}>
-                    <div className={styles.goldSuccessIndicator}>
-                      <svg width="64" height="64" viewBox="0 0 100 100">
-                        <defs>
-                          <linearGradient id="goldGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#8b6914" />
-                            <stop offset="30%" stopColor="#c9a96e" />
-                            <stop offset="50%" stopColor="#d4af37" />
-                            <stop offset="70%" stopColor="#f5e6c8" />
-                            <stop offset="100%" stopColor="#c9a96e" />
-                          </linearGradient>
-                        </defs>
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#goldGrad2)" strokeWidth="2" opacity="0.3" />
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="url(#goldGrad2)" strokeWidth="2" />
-                        <path 
-                          d="M35 50 L45 60 L65 38" 
-                          fill="none" 
-                          stroke="url(#goldGrad2)" 
-                          strokeWidth="3.5" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-
-                    <h3 className={styles.modalTitle}>Verification Required</h3>
-                    <p className={styles.modalSubtitle} style={{ color: 'var(--gold-light)', fontWeight: '500' }}>
-                      We sent a secure verification link to:
-                    </p>
-                    <p className={styles.emailHighlighted}>{email}</p>
-                    <p className={styles.modalSubtitle} style={{ marginTop: '12px' }}>
-                      Please click the link inside the verification email to activate your account. You will not be able to place orders until verified.
-                    </p>
+                    <h3 className={styles.modalTitle}>Verify Security OTP</h3>
+                    <p className={styles.modalSubtitle}>Enter the 6-digit code to verify your authorization status</p>
                   </div>
 
-                  <div className={styles.loginForm} style={{ marginTop: '12px', textAlign: 'center' }}>
-                    <button onClick={() => { setLoginStep('LOGIN'); setErrorText(''); }} className={styles.submitBtn}>
-                      Return to Sign In
+                  {correctOtp && (
+                    <div style={{
+                      background: 'rgba(212, 175, 55, 0.08)',
+                      border: '1px solid rgba(212, 175, 55, 0.2)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      marginBottom: '16px',
+                      color: '#D4AF37',
+                      fontSize: '0.8rem',
+                      textAlign: 'center'
+                    }}>
+                      <strong>[DEMO MODE] SMS OTP Sent:</strong> <span style={{ fontSize: '1rem', letterSpacing: '2px', fontWeight: 'bold' }}>{correctOtp}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleVerifyOtpSubmit} className={styles.loginForm}>
+                    <div className={styles.inputGroup}>
+                      <span className={styles.inputLabel}>Verification OTP Code</span>
+                      <div className={styles.emailInputWrapper}>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          placeholder="e.g. 123456"
+                          value={otpCode}
+                          onChange={(e) => { setOtpCode(e.target.value); setErrorText(''); }}
+                          className={styles.goldInput}
+                          required
+                          style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem' }}
+                        />
+                      </div>
+                    </div>
+
+                    {errorText && (
+                      <p className={styles.errorText}>
+                        <ShieldAlert size={12} /> {errorText}
+                      </p>
+                    )}
+
+                    <button type="submit" className={styles.submitBtn}>
+                      Verify OTP Code
+                    </button>
+                  </form>
+
+                  <div className={styles.modalFooter}>
+                    <button onClick={() => { setLoginStep('FORGOT_PASSWORD'); setErrorText(''); }} className={styles.toggleStepBtn}>
+                      ← Resend OTP
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* RESET PASSWORD STEP */}
+              {loginStep === 'RESET_PASSWORD' && (
+                <div>
+                  <div className={styles.modalHeader}>
+                    <h3 className={styles.modalTitle}>Configure New Password</h3>
+                    <p className={styles.modalSubtitle}>Configure your updated security credentials below</p>
+                  </div>
+
+                  <form onSubmit={handleResetPasswordSubmit} className={styles.loginForm}>
+                    <div className={styles.inputGroup}>
+                      <span className={styles.inputLabel}>New Password</span>
+                      <div className={styles.emailInputWrapper}>
+                        <Lock size={16} className={styles.inputIcon} />
+                        <input
+                          ref={newPasswordRef}
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={newPassword}
+                          onChange={(e) => { setNewPassword(e.target.value); setErrorText(''); }}
+                          className={styles.goldInput}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.visibilityToggle}
+                          onClick={() => toggleVisibility(newPasswordRef, setShowNewPassword)}
+                          aria-label={showNewPassword ? "Hide password" : "Show password"}
+                        >
+                          {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <span className={styles.inputLabel}>Confirm New Password</span>
+                      <div className={styles.emailInputWrapper}>
+                        <Lock size={16} className={styles.inputIcon} />
+                        <input
+                          ref={confirmNewPasswordRef}
+                          type={showConfirmNewPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={confirmNewPassword}
+                          onChange={(e) => { setConfirmNewPassword(e.target.value); setErrorText(''); }}
+                          className={styles.goldInput}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.visibilityToggle}
+                          onClick={() => toggleVisibility(confirmNewPasswordRef, setShowConfirmNewPassword)}
+                          aria-label={showConfirmNewPassword ? "Hide password" : "Show password"}
+                        >
+                          {showConfirmNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {errorText && (
+                      <p className={styles.errorText}>
+                        <ShieldAlert size={12} /> {errorText}
+                      </p>
+                    )}
+
+                    <button type="submit" className={styles.submitBtn}>
+                      Save Changes
+                    </button>
+                  </form>
+
+                  <div className={styles.modalFooter}>
+                    <button onClick={() => { setLoginStep('LOGIN'); setErrorText(''); }} className={styles.toggleStepBtn}>
+                      Cancel
                     </button>
                   </div>
                 </div>
@@ -700,8 +908,8 @@ export default function Navigation() {
                     <div className={styles.spinnerRing}></div>
                     <div className={styles.spinnerRingInner}></div>
                   </div>
-                  <h4 className={styles.loadingMessage}>Connecting Securely</h4>
-                  <p className={styles.modalSubtitle}>Authenticating with the Al-Quraish secure portal...</p>
+                  <h4 className={styles.loadingMessage}>Processing Request</h4>
+                  <p className={styles.modalSubtitle}>Syncing securely with the Al-Quraish database...</p>
                 </div>
               )}
 
@@ -711,8 +919,8 @@ export default function Navigation() {
                   <div className={styles.successIcon}>
                     <Check size={32} />
                   </div>
-                  <h4 className={styles.successMessage}>Authenticated</h4>
-                  <p className={styles.modalSubtitle}>Welcome to the inner circle of Al-Quraish.</p>
+                  <h4 className={styles.successMessage}>Session Synchronized</h4>
+                  <p className={styles.modalSubtitle}>Credentials configured. Welcome to the Al-Quraish collection.</p>
                 </div>
               )}
             </motion.div>

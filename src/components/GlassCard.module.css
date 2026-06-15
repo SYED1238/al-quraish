@@ -3,10 +3,10 @@
   border-radius: 20px;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  background: rgba(10, 42, 32, 0.35);
+  background: var(--black-card, rgba(10, 42, 32, 0.35));
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--black-border, rgba(212, 175, 55, 0.12));
   box-shadow: 
     inset 0 1px 1px rgba(255, 255, 255, 0.03),
     0 12px 30px rgba(0, 0, 0, 0.4);

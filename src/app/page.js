@@ -3,17 +3,10 @@
 import { useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import HeroSection from '../sections/HeroSection';
-import ImmersiveProduct from '../sections/ImmersiveProduct';
-import CollectionSection from '../sections/CollectionSection';
-import SignatureCatches from '../sections/SignatureCatches';
-import SourceToTable from '../sections/SourceToTable';
-import StandardsSection from '../sections/StandardsSection';
-import ExperienceSection from '../sections/ExperienceSection';
-import ProductUniverse from '../sections/ProductUniverse';
-import MembershipSection from '../sections/MembershipSection';
-import TestimonialsSection from '../sections/TestimonialsSection';
+import ShopByCategory from '../sections/ShopByCategory';
 import WhySection from '../sections/WhySection';
-import FinalCTA from '../sections/FinalCTA';
+import TestimonialsSection from '../sections/TestimonialsSection';
+import DeliveryBanner from '../sections/DeliveryBanner';
 import Footer from '../sections/Footer';
 
 export default function Home() {
@@ -51,20 +44,16 @@ export default function Home() {
   }, []);
 
   return (
-    <main>
+    <main style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navigation />
       <HeroSection />
-      <ImmersiveProduct />
-      <CollectionSection />
-      <SignatureCatches />
-      <SourceToTable />
-      <StandardsSection />
-      <ExperienceSection />
-      <ProductUniverse />
-      <MembershipSection />
-      <TestimonialsSection />
+      <ShopByCategory />
       <WhySection />
-      <FinalCTA />
+      <TestimonialsSection />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '80px', padding: '80px 0', background: '#ffffff', width: '100%' }}>
+        <DeliveryBanner />
+      </div>
+
       <Footer />
     </main>
   );

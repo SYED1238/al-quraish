@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
 
     // Short artificial loading delay for secure premium feel
     setTimeout(() => {
-      if (username === 'hussainumair' && password === '87654321') {
+      if (username === 'hussainumair' && password === '654321') {
         localStorage.setItem('admin_session', 'true');
         router.push('/admin');
       } else {

@@ -108,43 +108,7 @@ function CheckoutContent() {
     }
   }, [cart, authLoading, orderSuccess, placingOrder, router]);
 
-  // Verification Screen
-  if (user && !user.email_confirmed_at) {
-    return (
-      <div className={styles.verificationRequiredScreen}>
-        <ParticleField
-          particleCount={20}
-          color="rgba(212, 175, 55, 0.1)"
-          speed={0.05}
-          maxSize={1}
-        />
-        <div className={styles.verificationContent}>
-          <div className={styles.goldEmblemFrame}>
-            <ShieldAlert size={48} className={styles.goldEmblemIcon} />
-          </div>
-          <h2 className={styles.verificationTitle}>VERIFICATION REQUIRED</h2>
-          <p className={styles.verificationText}>
-            To protect Al-Quraish secure cold chain routing operations, orders can only be placed by verified email accounts.
-          </p>
-          <div className={styles.verificationDetailsCard}>
-            <span className={styles.verificationLabel}>Registered Coordinates</span>
-            <span className={styles.verificationEmail}>{user.email}</span>
-            <p className={styles.verificationInstructions}>
-              We sent a verification link to your inbox. Please locate the email from Al-Quraish and click the confirmation link to activate your ordering credentials.
-            </p>
-          </div>
-          <div className={styles.verificationActions}>
-            <Link href="/account?tab=profile" className="btn-primary">
-              View Profile Status
-            </Link>
-            <Link href="/premium-poultry" className="btn-glass">
-              Return to Catalog
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   // Geolocation and Reverse Geocoding Handler
   const handleGetCurrentLocation = () => {
@@ -278,6 +242,11 @@ _Please forward this message to the dispatch/delivery staff._`;
   const handleAddAddress = async (e) => {
     e.preventDefault();
     setAddressError('');
+
+    if (!newAddress.latitude || !newAddress.longitude) {
+      setAddressError('GPS coordinates are compulsory. Please click "Use Current Location" to capture your location before saving.');
+      return;
+    }
 
     if (
       !newAddress.full_name ||

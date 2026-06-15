@@ -26,6 +26,14 @@ import ParticleField from '../../components/ParticleField';
 import GlassCard from '../../components/GlassCard';
 import styles from './page.module.css';
 
+const getPhoneFromEmail = (email) => {
+  if (!email) return '';
+  if (email.endsWith('@equraishi.com')) {
+    return email.split('@')[0];
+  }
+  return email;
+};
+
 function AccountDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -210,6 +218,10 @@ function AccountDashboard() {
   const handleAddAddress = async (e) => {
     e.preventDefault();
     setAddressError('');
+    if (!newAddress.latitude || !newAddress.longitude) {
+      setAddressError('GPS coordinates are compulsory. Please click "Use Current Location" to capture your location before saving.');
+      return;
+    }
     if (
       !newAddress.full_name ||
       !newAddress.phone ||
@@ -321,18 +333,12 @@ function AccountDashboard() {
                 {profile?.full_name?.substring(0, 2).toUpperCase() || 'GU'}
               </div>
               <h2 className={styles.memberName}>{profile?.full_name || 'Guest Member'}</h2>
-              <p className={styles.memberEmail}>{user.email}</p>
+              <p className={styles.memberEmail}>{getPhoneFromEmail(user.email)}</p>
               <span className={styles.badgeVIP}>Inner Circle Member</span>
               <div className={styles.verificationBadgeContainer}>
-                {user.email_confirmed_at ? (
-                  <span className={styles.badgeVerified}>
-                    Verified Gold Account
-                  </span>
-                ) : (
-                  <span className={styles.badgeUnverified}>
-                    Verification Pending
-                  </span>
-                )}
+                <span className={styles.badgeVerified}>
+                  Verified Gold Account
+                </span>
               </div>
             </GlassCard>
 
@@ -385,28 +391,12 @@ function AccountDashboard() {
                   <h3 className={styles.sectionTitle}>Profile Credentials</h3>
                   <p className={styles.sectionSubtitle}>Manage your registration credentials and verification status.</p>
 
-                  {!user.email_confirmed_at && (
-                    <div className={styles.unverifiedBanner} style={{
-                      background: 'rgba(212, 175, 55, 0.05)',
-                      border: '1px solid rgba(212, 175, 55, 0.25)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      marginBottom: '24px',
-                      color: '#F4E6C0',
-                      fontSize: '0.82rem',
-                      lineHeight: '1.4'
-                    }}>
-                      <strong style={{ display: 'block', color: 'var(--gold)', marginBottom: '4px' }}>Verification Required</strong>
-                      To place orders, your email address must be verified. We sent a verification link to your inbox. Please check your email and click the confirmation link to activate ordering privileges.
-                    </div>
-                  )}
-
                   <form onSubmit={handleUpdateProfile} className={styles.form}>
                     <div className={styles.inputGroup}>
-                      <span className={styles.inputLabel}>Registered Email</span>
+                      <span className={styles.inputLabel}>Registered Phone</span>
                       <input
                         type="text"
-                        value={user.email}
+                        value={getPhoneFromEmail(user.email)}
                         className={styles.disabledInput}
                         disabled
                       />
@@ -415,17 +405,8 @@ function AccountDashboard() {
                     <div className={styles.inputGroup}>
                       <span className={styles.inputLabel}>Verification Status</span>
                       <div className={styles.disabledInput} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {user.email_confirmed_at ? (
-                          <>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d4af37' }}></span>
-                            <span style={{ color: '#F4E6C0' }}>Verified Gold Account</span>
-                          </>
-                        ) : (
-                          <>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></span>
-                            <span style={{ color: '#f87171' }}>Verification Pending</span>
-                          </>
-                        )}
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d4af37' }}></span>
+                        <span style={{ color: '#F4E6C0' }}>Verified Gold Account</span>
                       </div>
                     </div>
 

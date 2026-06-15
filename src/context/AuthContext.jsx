@@ -3,6 +3,16 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+const formatIdentifier = (identifier) => {
+  if (!identifier) return '';
+  const clean = identifier.trim();
+  const isPhone = /^\+?[0-9]{7,15}$/.test(clean);
+  if (isPhone) {
+    return `${clean.startsWith('+') ? clean : clean}@equraishi.com`;
+  }
+  return clean;
+};
+
 const AuthContext = createContext({
   user: null,
   session: null,
@@ -10,8 +20,8 @@ const AuthContext = createContext({
   loading: true,
   authModalOpen: false,
   setAuthModalOpen: () => {},
-  signInWithPassword: async (email, password) => {},
-  signUpWithPassword: async (email, password, fullName) => {},
+  signInWithPassword: async (phone, password) => {},
+  signUpWithPassword: async (phone, password, fullName) => {},
   sendPasswordResetEmail: async (email) => {},
   signOut: async () => {},
   updateProfileName: async (name) => {}
@@ -99,7 +109,8 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signInWithPassword = async (email, password) => {
+  const signInWithPassword = async (phone, password) => {
+    const email = formatIdentifier(phone);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -108,14 +119,16 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const signUpWithPassword = async (email, password, fullName) => {
-    console.log('[AuthContext] signUpWithPassword initiating for email:', email);
+  const signUpWithPassword = async (phone, password, fullName) => {
+    const email = formatIdentifier(phone);
+    console.log('[AuthContext] signUpWithPassword initiating for phone:', phone, 'email:', email);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
+          phone_number: phone,
           role: 'customer' // default role
         },
         emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/account` : undefined,
@@ -139,7 +152,7 @@ export function AuthProvider({ children }) {
 
       if (isDuplicate) {
         console.warn('[AuthContext] signUp: Empty identities detected. Throwing duplicate user error.');
-        throw new Error('An account with this email address already exists. Please sign in instead.');
+        throw new Error('An account with this phone number already exists. Please sign in instead.');
       }
     }
 
